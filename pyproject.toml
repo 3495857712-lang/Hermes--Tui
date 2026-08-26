@@ -57,11 +57,11 @@ all = [
 hermes-tui = "hermes_tui.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/hermes-tui/hermes-tui"
-Repository = "https://github.com/hermes-tui/hermes-tui"
-Documentation = "https://github.com/hermes-tui/hermes-tui#readme"
-Issues = "https://github.com/hermes-tui/hermes-tui/issues"
-Changelog = "https://github.com/hermes-tui/hermes-tui/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/3495857712-lang/Hermes--Tui"
+Repository = "https://github.com/3495857712-lang/Hermes--Tui"
+Documentation = "https://github.com/3495857712-lang/Hermes--Tui#readme"
+Issues = "https://github.com/3495857712-lang/Hermes--Tui/issues"
+Changelog = "https://github.com/3495857712-lang/Hermes--Tui/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hermes_tui"]
