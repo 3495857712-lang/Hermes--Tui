@@ -72,7 +72,7 @@ hermes-tui --model qwen2.5:7b
 ### From source
 
 ```bash
-git clone https://github.com/3495857712-lang/hermes-tui.git
+git clone https://github.com/"3495857712-lang"/hermes-tui.git
 cd hermes-tui
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
