@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  hermes-tui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hermes-tui:latest
+    container_name: hermes-tui
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - HERMES_TUI_CONFIG_DIR=/root/.hermes-tui
+    volumes:
+      - hermes-config:/root/.hermes-tui
+      # Uncomment to connect to host Ollama:
+      # - /var/run/docker.sock:/var/run/docker.sock
+    # For connecting to host Ollama on Linux:
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+
+volumes:
+  hermes-config:

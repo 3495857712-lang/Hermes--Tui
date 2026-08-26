@@ -1,0 +1,281 @@
+# Hermes TUI — Default Configuration
+# This file is used as the base configuration when no user config exists.
+# User configuration in ~/.hermes-tui/config.yaml overrides these defaults.
+
+# ─── Active Profile ───────────────────────────────────────────────────────────
+# The default profile name. Can be overridden via --profile flag or
+# HERMES_TUI_PROFILE environment variable.
+profile: default
+
+# ─── Default Provider and Model ──────────────────────────────────────────────
+# The LLM provider to use. Supported: openai, ollama, openrouter, deepseek, custom
+provider: openai
+
+# The default model name. Must be valid for the selected provider.
+# Common options:
+#   OpenAI:     gpt-4o, gpt-4o-mini, o1-mini, o1-preview
+#   Ollama:     llama3, mistral, codellama, phi3
+#   OpenRouter: anthropic/claude-3.5-sonnet, google/gemini-pro
+#   DeepSeek:   deepseek-chat, deepseek-reasoner
+model: gpt-4o-mini
+
+# ─── LLM Generation Settings ─────────────────────────────────────────────────
+llm:
+  # Sampling temperature: 0.0 (deterministic) to 2.0 (creative/random).
+  # Lower values are better for factual tasks; higher for creative writing.
+  temperature: 0.7
+
+  # Nucleus sampling parameter. Only tokens with cumulative probability
+  # up to top_p are considered. 1.0 disables nucleus sampling.
+  top_p: 1.0
+
+  # Maximum number of tokens in the generated response.
+  # Set lower to limit response length and cost.
+  max_tokens: 4096
+
+  # Stream responses token-by-token for real-time display.
+  # Set to false to wait for the complete response before displaying.
+  stream: true
+
+  # HTTP request timeout in seconds. Increase for slow local models.
+  timeout: 120
+
+  # Number of automatic retries on transient failures (rate limits, 5xx errors).
+  # Uses exponential backoff starting at retry_delay seconds.
+  max_retries: 3
+
+  # Initial retry delay in seconds. Doubles with each retry attempt.
+  retry_delay: 1.0
+
+  # Custom system prompt override. If empty, the default SOUL.md is used.
+  # Set this to completely replace the agent's personality and instructions.
+  system_prompt: ""
+
+# ─── Memory System ───────────────────────────────────────────────────────────
+memory:
+  # Master switch for the memory system. When disabled, no memories are
+  # stored or retrieved, and conversations are not persisted.
+  enabled: true
+
+  # Number of recent messages to include in the LLM context in full.
+  # Older messages are summarized to fit the context window.
+  max_context_messages: 50
+
+  # Enable long-term memory storage in SQLite with FTS5 full-text search.
+  # When disabled, only immediate memory (user profile, rules) is used.
+  long_term_enabled: true
+
+  # Automatically extract durable facts from conversations and store them
+  # in long-term memory for future recall.
+  auto_extract: true
+
+  # Minimum confidence score (0.0 to 1.0) for a memory to be stored.
+  # Higher values store fewer, more certain memories.
+  extract_threshold: 0.7
+
+  # Maximum number of relevant long-term memories to inject into context.
+  max_search_results: 5
+
+  # Enable prompt injection detection. Scans user input and tool outputs
+  # for attempts to override system instructions or exfiltrate data.
+  prompt_injection_detection: true
+
+# ─── Tool System ─────────────────────────────────────────────────────────────
+tools:
+  # Master switch for the tool system. When disabled, no tools are
+  # available and the agent operates in chat-only mode.
+  enabled: true
+
+  # Require explicit user confirmation before executing ANY tool call.
+  # Individual tool settings can override this with their own confirm flag.
+  confirm_all: true
+
+  # Default timeout in seconds for tool execution. Tools that exceed this
+  # are terminated and return a timeout error.
+  timeout: 30
+
+  # File system paths that tools are permitted to access.
+  # Empty list means no path restrictions (subject to denied_paths).
+  # Paths support ~ expansion and glob patterns.
+  allowed_paths: []
+
+  # File system paths that tools are NEVER permitted to access.
+  # These take precedence over allowed_paths.
+  denied_paths:
+    - ~/.ssh
+    - ~/.aws
+    - ~/.gnupg
+    - /etc/shadow
+    - /etc/sudoers
+
+  # Per-tool configuration. Each tool can override global settings.
+  bash:
+    enabled: true
+    # Require confirmation before executing shell commands
+    confirm: true
+    # Override global timeout for bash (shell commands may take longer)
+    timeout: 60
+    # If non-empty, only these commands are allowed
+    allowed_commands: []
+    # Commands that are never allowed regardless of allowed_commands
+    denied_commands:
+      - sudo
+      - rm -rf /
+      - dd
+      - mkfs
+      - shutdown
+      - reboot
+      - chmod 777
+
+  file_read:
+    enabled: true
+    confirm: false
+    # Maximum file size in bytes that can be read (1 MB default)
+    max_file_size: 1048576
+
+  file_write:
+    enabled: true
+    confirm: true
+
+  web_search:
+    enabled: true
+    confirm: false
+    max_results: 5
+
+# ─── User Interface ──────────────────────────────────────────────────────────
+ui:
+  # Color theme. Built-in options:
+  #   dark, light, dracula, monokai, nord,
+  #   solarized-dark, solarized-light, gruvbox
+  theme: dark
+
+  # Display token usage (prompt tokens, completion tokens, total) for
+  # each assistant message.
+  show_token_usage: true
+
+  # Show a timestamp next to each message.
+  show_timestamp: false
+
+  # Enable vim-style keybindings (h/j/k/l navigation, etc.) in the input.
+  vim_mode: false
+
+  # Enable mouse support for scrolling and clicking.
+  mouse_support: true
+
+  # Maximum number of messages retained in the TUI scrollback buffer.
+  # Older messages are unloaded from the display (but kept in the database).
+  max_messages_display: 500
+
+  # Duration in seconds that notification pop-ups remain on screen.
+  notification_duration: 3.0
+
+# ─── Skill System ────────────────────────────────────────────────────────────
+skills:
+  # Master switch for the skill system.
+  enabled: true
+
+  # Automatically detect and load skills that match the user's intent.
+  # When disabled, skills must be loaded manually with /skill <name>.
+  auto_load: true
+
+  # Directories searched for skills, in order of priority.
+  # Later directories override earlier ones for same-named skills.
+  directories:
+    - ./skills
+    - ~/.hermes-tui/skills
+
+  # Maximum number of skills simultaneously active in the LLM context.
+  # Prevents excessive token usage from too many loaded skills.
+  max_active_skills: 3
+
+# ─── Logging ─────────────────────────────────────────────────────────────────
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  # DEBUG is verbose and useful for troubleshooting; INFO is recommended
+  # for normal use.
+  level: INFO
+
+  # Path to the log file. Supports ~ expansion.
+  file: ~/.hermes-tui/logs/hermes.log
+
+  # Maximum size of a single log file in megabytes before rotation.
+  max_size_mb: 10
+
+  # Number of rotated log files to retain.
+  backup_count: 5
+
+# ─── Provider Definitions ────────────────────────────────────────────────────
+# API keys are NOT stored here. They are read from environment variables
+# or a .env file in the config directory.
+providers:
+  openai:
+    api_key_env: OPENAI_API_KEY
+    base_url: https://api.openai.com/v1
+
+  ollama:
+    # No api_key_env needed for local Ollama
+    base_url: http://localhost:11434
+
+  openrouter:
+    api_key_env: OPENROUTER_API_KEY
+    base_url: https://openrouter.ai/api/v1
+
+  deepseek:
+    api_key_env: DEEPSEEK_API_KEY
+    base_url: https://api.deepseek.com/v1
+
+  # Example custom OpenAI-compatible endpoint (e.g., vLLM, LM Studio)
+  # custom:
+  #   api_key_env: CUSTOM_LLM_API_KEY
+  #   base_url: http://localhost:8000/v1
+
+# ─── Profiles ────────────────────────────────────────────────────────────────
+# Profiles allow quick switching between different configurations.
+# Activate with: /profile <name> or hermes-tui --profile <name>
+# Each profile inherits top-level settings and can override any of them.
+profiles:
+  default:
+    provider: openai
+    model: gpt-4o-mini
+    llm:
+      temperature: 0.7
+
+  # Example: fast model for quick tasks
+  # fast:
+  #   provider: openai
+  #   model: gpt-4o-mini
+  #   llm:
+  #     temperature: 0.3
+  #     max_tokens: 2048
+
+  # Example: powerful model for complex coding
+  # coding:
+  #   provider: openai
+  #   model: gpt-4o
+  #   llm:
+  #     temperature: 0.2
+  #     max_tokens: 8192
+
+  # Example: fully offline with Ollama
+  # local:
+  #   provider: ollama
+  #   model: llama3
+  #   llm:
+  #     temperature: 0.8
+  #     timeout: 300
+
+# ─── Scheduled Tasks ─────────────────────────────────────────────────────────
+# Define recurring prompts that run on a cron schedule.
+# Each schedule runs in the background and notifies you on completion.
+#
+# schedules:
+#   - name: daily-summary
+#     # Standard 5-field cron expression (min hour day month weekday)
+#     cron: "0 18 * * 1-5"
+#     prompt: "Summarize today's conversations and key decisions"
+#     # Profile to use for this task
+#     profile: default
+#     # Output method: notify (in-app), file (write to disk), or both
+#     output: notify
+#     # When output is file, the path template (supports {date} placeholder)
+#     output_path: ""

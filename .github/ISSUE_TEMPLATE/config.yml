@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/hermes-tui/hermes-tui/discussions
+    about: Ask questions, share ideas, and discuss with the community.
+
+  - name: 📚 Documentation
+    url: https://github.com/hermes-tui/hermes-tui/tree/main/docs
+    about: Read the documentation before asking for help.
+
+  - name: 🔒 Security Advisory
+    url: https://github.com/hermes-tui/hermes-tui/security/advisories/new
+    about: Report security vulnerabilities privately. Do not open public issues for security problems.

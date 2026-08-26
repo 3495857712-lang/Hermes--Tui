@@ -1,0 +1,126 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hermes-tui"
+version = "0.1.0"
+description = "A self-improving terminal AI agent with persistent memory, skills, and multi-provider LLM support."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Hermes TUI Contributors" },
+]
+keywords = ["ai", "agent", "tui", "llm", "terminal", "chatbot", "self-improving"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Chat",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Terminals",
+]
+dependencies = [
+    "textual>=0.85.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "PyYAML>=6.0",
+    "rich>=13.0.0",
+    "click>=8.1.0",
+    "python-dotenv>=1.0.0",
+    "tenacity>=8.2.0",
+    "markdown-it-py>=3.0.0",
+    "platformdirs>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.6.0",
+    "mypy>=1.10.0",
+    "respx>=0.21.0",
+]
+all = [
+    "ollama>=0.3.0",
+]
+
+[project.scripts]
+hermes-tui = "hermes_tui.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/hermes-tui/hermes-tui"
+Repository = "https://github.com/hermes-tui/hermes-tui"
+Documentation = "https://github.com/hermes-tui/hermes-tui#readme"
+Issues = "https://github.com/hermes-tui/hermes-tui/issues"
+Changelog = "https://github.com/hermes-tui/hermes-tui/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hermes_tui"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH", "RUF"]
+ignore = [
+    "E501",
+    "TC001",
+    "TC002",
+    "TC003",
+    "RUF001",
+    "RUF002",
+    "RUF003",
+    "UP042",
+    "RUF012",
+    "SIM105",
+    "SIM108",
+    "SIM118",
+    "SIM103",
+    "RUF005",
+    "RUF006",
+    "RUF059",
+    "A001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F", "B017"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["textual.*", "httpx.*", "markdown_it.*", "tenacity.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src/hermes_tui"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

@@ -1,0 +1,157 @@
+name: Bug Report
+description: Report a bug to help us improve Hermes TUI
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report!
+        Please fill out the information below to help us diagnose and fix the issue.
+
+  - type: input
+    id: title
+    validations:
+      required: true
+    attributes:
+      label: Bug Summary
+      description: A clear and concise description of what the bug is.
+      placeholder: Hermes TUI crashes when I try to...
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Detailed Description
+      description: Explain what you were doing and what happened.
+      placeholder: I was using the web search tool when...
+
+  - type: textarea
+    id: reproduce
+    validations:
+      required: true
+    attributes:
+      label: Steps to Reproduce
+      description: Minimal steps to reproduce the behavior.
+      placeholder: |
+        1. Start Hermes TUI with `hermes-tui`
+        2. Type a message containing...
+        3. Wait for the response...
+        4. See error
+      render: markdown
+
+  - type: textarea
+    id: expected
+    validations:
+      required: true
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: The tool should execute successfully and return results.
+
+  - type: textarea
+    id: actual
+    validations:
+      required: true
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: The application crashed with a traceback...
+
+  - type: dropdown
+    id: os
+    validations:
+      required: true
+    attributes:
+      label: Operating System
+      description: Which operating system are you using?
+      options:
+        - Linux
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows 10
+        - Windows 11
+        - Other (please specify in description)
+
+  - type: input
+    id: python-version
+    validations:
+      required: true
+    attributes:
+      label: Python Version
+      description: Output of `python --version`
+      placeholder: "Python 3.11.7"
+
+  - type: input
+    id: hermes-version
+    validations:
+      required: true
+    attributes:
+      label: Hermes TUI Version
+      description: Output of `hermes-tui --version` or `pip show hermes-tui`
+      placeholder: "0.1.0"
+
+  - type: dropdown
+    id: provider
+    validations:
+      required: true
+    attributes:
+      label: LLM Provider
+      description: Which LLM provider were you using?
+      options:
+        - OpenAI
+        - Ollama
+        - OpenRouter
+        - DeepSeek
+        - Multiple / Other
+
+  - type: input
+    id: model
+    validations:
+      required: false
+    attributes:
+      label: Model Name
+      description: The specific model you were using
+      placeholder: "gpt-4o, llama3, deepseek-chat, etc."
+
+  - type: textarea
+    id: screenshots
+    validations:
+      required: false
+    attributes:
+      label: Screenshots / Terminal Output
+      description: If applicable, paste terminal output or attach screenshots.
+      render: text
+
+  - type: textarea
+    id: logs
+    validations:
+      required: false
+    attributes:
+      label: Logs
+      description: |
+        If applicable, paste relevant log content from `~/.hermes-tui/logs/`.
+        Please do not include API keys or other sensitive information.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have checked the [FAQ](https://github.com/hermes-tui/hermes-tui/blob/main/docs/faq.md)
+          required: false
+        - label: I am using the latest version of Hermes TUI
+          required: true
+
+  - type: textarea
+    id: additional
+    validations:
+      required: false
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here.
+      placeholder: References, links, related issues, etc.

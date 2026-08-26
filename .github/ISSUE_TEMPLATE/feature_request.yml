@@ -1,0 +1,77 @@
+name: Feature Request
+description: Suggest a new feature or improvement for Hermes TUI
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide as much detail as possible.
+
+  - type: textarea
+    id: problem
+    validations:
+      required: true
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm always frustrated when I try to use Hermes TUI to...
+
+  - type: textarea
+    id: solution
+    validations:
+      required: true
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see.
+      placeholder: I would like Hermes TUI to be able to...
+      render: markdown
+
+  - type: textarea
+    id: alternatives
+    validations:
+      required: false
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: I have tried using X instead, but it doesn't work because...
+      render: markdown
+
+  - type: dropdown
+    id: category
+    validations:
+      required: true
+    attributes:
+      label: Feature Category
+      description: What area of Hermes TUI does this feature relate to?
+      options:
+        - User Interface / TUI
+        - LLM Integration / Providers
+        - Memory System
+        - Skill System
+        - Tool System
+        - Configuration
+        - Documentation
+        - Performance
+        - Security
+        - Other
+
+  - type: textarea
+    id: context
+    validations:
+      required: false
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, or examples about the feature request here.
+      placeholder: Screenshots, sketches, links to similar features in other projects...
+      render: markdown
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues and discussions to avoid duplicates
+          required: true
+        - label: I have reviewed the [documentation](https://github.com/hermes-tui/hermes-tui/tree/main/docs)
+          required: true

@@ -1,0 +1,15 @@
+# Default owners for everything in the repo
+* @hermes-tui/maintainers
+
+# Documentation
+*.md @hermes-tui/docs-team
+docs/ @hermes-tui/docs-team
+
+# Python source
+src/ @hermes-tui/core-team
+
+# CI/CD
+.github/ @hermes-tui/devops-team
+Makefile @hermes-tui/devops-team
+Dockerfile @hermes-tui/devops-team
+docker-compose.yml @hermes-tui/devops-team

@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_DEFAULT_VERSION: "3.11"
+
+jobs:
+  lint:
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements*.txt"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_DEFAULT_VERSION }}
+
+      - name: Install dependencies
+        run: uv pip install --system -r requirements-dev.txt
+
+      - name: Run Ruff check
+        run: ruff check src tests
+
+      - name: Verify formatting
+        run: ruff format --check src tests
+
+  typecheck:
+    name: Type Check (Mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements*.txt"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_DEFAULT_VERSION }}
+
+      - name: Install package and dependencies
+        run: |
+          uv pip install --system -e ".[dev]"
+          uv pip install --system -r requirements-dev.txt
+
+      - name: Run Mypy
+        run: mypy src --strict
+
+  test:
+    name: Test (Python ${{ matrix.python-version }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements*.txt"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install package and dependencies
+        run: |
+          uv pip install --system -e ".[dev]"
+          uv pip install --system -r requirements-dev.txt
+
+      - name: Run tests with coverage
+        run: pytest tests/ -v --cov=src/hermes_tui --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 30
