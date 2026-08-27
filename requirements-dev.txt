@@ -17,7 +17,7 @@ types-pyyaml
 
 # Build and packaging
 build>=1.0.0
-twine>=4.0.0
+twine>=4.0.2
 hatchling>=1.21.0
 
 # Multi-environment testing
