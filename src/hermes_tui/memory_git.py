@@ -56,11 +56,7 @@ class MemoryDiff:
             return f"+ [{self.layer}] {self.key}: {self.new_value}"
         if self.op == "delete":
             return f"- [{self.layer}] {self.key}: {self.old_value}"
-        return (
-            f"~ [{self.layer}] {self.key}:\n"
-            f"    - {self.old_value}\n"
-            f"    + {self.new_value}"
-        )
+        return f"~ [{self.layer}] {self.key}:\n    - {self.old_value}\n    + {self.new_value}"
 
 
 @dataclass
@@ -154,9 +150,7 @@ class MemoryGit:
 
     def stage_update(self, key: str, old: str, new: str, layer: str = "episodic") -> None:
         """Stage a modification."""
-        self._staged.append(
-            MemoryDiff("modify", key, old_value=old, new_value=new, layer=layer)
-        )
+        self._staged.append(MemoryDiff("modify", key, old_value=old, new_value=new, layer=layer))
 
     def stage_delete(self, key: str, old: str, layer: str = "episodic") -> None:
         """Stage a deletion."""
@@ -314,8 +308,7 @@ class MemoryGit:
     def list_branches(self) -> list[tuple[str, str, bool]]:
         """Return (name, head_hash, is_current) for all branches."""
         return [
-            (b.name, b.head or "", b.name == self._current_branch)
-            for b in self._branches.values()
+            (b.name, b.head or "", b.name == self._current_branch) for b in self._branches.values()
         ]
 
     # ------------------------------------------------------------------
@@ -413,9 +406,7 @@ class MemoryGit:
                         )
                     )
 
-        return self.commit(
-            f"Revert to {commit_hash[:8]}", revert_diffs, author="rollback"
-        )
+        return self.commit(f"Revert to {commit_hash[:8]}", revert_diffs, author="rollback")
 
     # ------------------------------------------------------------------
     # State access

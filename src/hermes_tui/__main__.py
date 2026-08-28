@@ -61,7 +61,7 @@ def chat(model: str | None, theme: str | None) -> None:
         from .bootstrap import create_app
     except ImportError as exc:
         click.echo(f"Error: failed to load Hermes TUI: {exc}", err=True)
-        click.echo("Install dependencies with: pip install -e \".[dev]\"", err=True)
+        click.echo('Install dependencies with: pip install -e ".[dev]"', err=True)
         sys.exit(1)
     config = _load_config()
     if model:
@@ -116,8 +116,10 @@ def doctor() -> None:
     click.echo(f"  Version:      {__version__}")
     click.echo(f"  Python:       {sys.version.split()[0]}")
     click.echo(f"  Config dir:   {get_config_dir()}")
-    click.echo(f"  Config file:  {DEFAULT_CONFIG_PATH} "
-               f"{'(exists)' if DEFAULT_CONFIG_PATH.exists() else '(not found)'}")
+    click.echo(
+        f"  Config file:  {DEFAULT_CONFIG_PATH} "
+        f"{'(exists)' if DEFAULT_CONFIG_PATH.exists() else '(not found)'}"
+    )
 
     # Config
     try:
@@ -249,8 +251,7 @@ def memory_list(layer: str | None, limit: int) -> None:
         for entry in entries:
             tags = f" [{', '.join(entry.tags)}]" if entry.tags else ""
             click.echo(
-                f"  #{entry.id} ({entry.layer}) {entry.key}{tags}  "
-                f"accessed={entry.access_count}"
+                f"  #{entry.id} ({entry.layer}) {entry.key}{tags}  accessed={entry.access_count}"
             )
             click.echo(f"    {entry.content[:150]}")
             click.echo()

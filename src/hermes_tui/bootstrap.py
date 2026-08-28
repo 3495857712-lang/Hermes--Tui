@@ -10,6 +10,7 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from .config import Config, get_config, get_config_dir
 from .database import DatabaseManager
@@ -116,7 +117,7 @@ def build_runtime(config: Config | None = None) -> HermesRuntime:
     )
 
 
-def create_app(config: Config | None = None):
+def create_app(config: Config | None = None) -> Any:
     """Build a fully wired :class:`~hermes_tui.ui.app.HermesApp` instance."""
     from .ui.app import HermesApp
 

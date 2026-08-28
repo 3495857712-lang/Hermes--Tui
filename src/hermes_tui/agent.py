@@ -12,7 +12,7 @@ from hermes_tui.config import Config
 from hermes_tui.database import DatabaseManager
 from hermes_tui.llm import LLMClient, LLMMessage
 from hermes_tui.memory import MemoryManager
-from hermes_tui.prompt import build_messages, build_system_prompt, format_tool_result
+from hermes_tui.prompt import build_messages, build_system_prompt
 from hermes_tui.skills import SkillLoader
 from hermes_tui.tools import ToolRegistry
 from hermes_tui.utils.helpers import generate_id
@@ -78,7 +78,7 @@ class AIAgent:
             )
             messages.append(msg)
         self._sessions[session_id] = messages
-        return rows
+        return [dict(row) for row in rows]
 
     def _get_history(self, session_id: str) -> list[LLMMessage]:
         if session_id not in self._sessions:
@@ -88,8 +88,7 @@ class AIAgent:
     def _build_system_prompt(self) -> str:
         memory_summary = self.memory.context_summary()
         skills_desc = "\n".join(
-            f"- {s.name}: {s.description}"
-            for s in self.skills.enabled_skills()[:10]
+            f"- {s.name}: {s.description}" for s in self.skills.enabled_skills()[:10]
         )
         tools_desc = "\n".join(
             f"- {t['function']['name']}: {t['function']['description']}"
@@ -101,9 +100,7 @@ class AIAgent:
             skills_description=skills_desc,
         )
 
-    async def send_message(
-        self, session_id: str, content: str
-    ) -> AsyncIterator[str]:
+    async def send_message(self, session_id: str, content: str) -> AsyncIterator[str]:
         """Send a user message and stream the assistant response."""
         if not content or not content.strip():
             return
@@ -130,12 +127,15 @@ class AIAgent:
             system_prompt=system_prompt,
             history=history[:-1],
         )
+        llm_messages = [
+            LLMMessage.from_dict(m) if isinstance(m, dict) else m for m in full_messages
+        ]
 
         tool_schemas = self.tools.list_tools()
 
         for _iteration in range(self.max_tool_iterations):
             response = await self.llm.chat(
-                messages=full_messages,
+                messages=llm_messages,
                 tools=tool_schemas if tool_schemas else None,
             )
 
@@ -160,7 +160,7 @@ class AIAgent:
             if not response.has_tool_calls:
                 break
 
-            full_messages.append(assistant_msg.to_dict())
+            llm_messages.append(assistant_msg)
 
             for tool_call in response.tool_calls or []:
                 fn = tool_call.get("function", {})
@@ -187,9 +187,7 @@ class AIAgent:
                     name=tool_name,
                 )
                 history.append(tool_msg)
-                full_messages.append(
-                    format_tool_result(tool_call_id, result, tool_name)
-                )
+                llm_messages.append(tool_msg)
 
                 self.db.insert_message(
                     message_id=generate_id(),

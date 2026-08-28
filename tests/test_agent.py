@@ -75,13 +75,9 @@ class TestSessionManagement:
         assert "user" in roles
         assert "assistant" in roles
 
-    async def test_session_title(
-        self, agent: AIAgent, mock_llm_client: MagicMock
-    ) -> None:
+    async def test_session_title(self, agent: AIAgent, mock_llm_client: MagicMock) -> None:
         """The session title should be set to the first 30 chars of the first message."""
-        long_message = (
-            "This is a very long first message that exceeds thirty characters"
-        )
+        long_message = "This is a very long first message that exceeds thirty characters"
         sid = agent.create_session()
         mock_llm_client.chat = AsyncMock(return_value=_text_response("Reply"))
         await agent.send_message_simple(sid, long_message)
@@ -95,33 +91,23 @@ class TestSessionManagement:
 class TestSendMessage:
     """Tests for sending messages and receiving responses."""
 
-    async def test_send_message_simple(
-        self, agent: AIAgent, mock_llm_client: MagicMock
-    ) -> None:
+    async def test_send_message_simple(self, agent: AIAgent, mock_llm_client: MagicMock) -> None:
         """A simple conversation without tool calls should stream text back."""
-        mock_llm_client.chat = AsyncMock(
-            return_value=_text_response("Hello! How can I help?")
-        )
+        mock_llm_client.chat = AsyncMock(return_value=_text_response("Hello! How can I help?"))
         sid = agent.create_session()
         response = await agent.send_message_simple(sid, "Hi there")
         assert "Hello" in response
         mock_llm_client.chat.assert_awaited()
 
-    async def test_empty_message(
-        self, agent: AIAgent, mock_llm_client: MagicMock
-    ) -> None:
+    async def test_empty_message(self, agent: AIAgent, mock_llm_client: MagicMock) -> None:
         """An empty message should not be sent to the LLM."""
-        mock_llm_client.chat = AsyncMock(
-            return_value=_text_response("should not be called")
-        )
+        mock_llm_client.chat = AsyncMock(return_value=_text_response("should not be called"))
         sid = agent.create_session()
         response = await agent.send_message_simple(sid, "")
         assert response == ""
         mock_llm_client.chat.assert_not_called()
 
-    async def test_conversation_history(
-        self, agent: AIAgent, mock_llm_client: MagicMock
-    ) -> None:
+    async def test_conversation_history(self, agent: AIAgent, mock_llm_client: MagicMock) -> None:
         """Multi-turn conversations should accumulate history correctly."""
         mock_llm_client.chat = AsyncMock(
             side_effect=[
@@ -164,9 +150,7 @@ class TestToolCalling:
         roles = [m.role for m in history]
         assert "tool" in roles
 
-    async def test_max_tool_iterations(
-        self, agent: AIAgent, mock_llm_client: MagicMock
-    ) -> None:
+    async def test_max_tool_iterations(self, agent: AIAgent, mock_llm_client: MagicMock) -> None:
         """The agent should stop after max_tool_iterations."""
         mock_llm_client.chat = AsyncMock(
             side_effect=[
@@ -197,9 +181,7 @@ class TestToolCalling:
             ]
         )
         sid = agent.create_session()
-        response = await agent.send_message_simple(
-            sid, "Use the failing tool"
-        )
+        response = await agent.send_message_simple(sid, "Use the failing tool")
 
         assert "still here" in response
         assert mock_llm_client.chat.await_count == 2
@@ -208,13 +190,9 @@ class TestToolCalling:
 class TestMemoryExtraction:
     """Tests for asynchronous memory extraction from conversations."""
 
-    async def test_agent_extracts_memory(
-        self, agent: AIAgent, mock_llm_client: MagicMock
-    ) -> None:
+    async def test_agent_extracts_memory(self, agent: AIAgent, mock_llm_client: MagicMock) -> None:
         """After a conversation containing '记住', a memory should be stored."""
-        mock_llm_client.chat = AsyncMock(
-            return_value=_text_response("好的，我记住了。")
-        )
+        mock_llm_client.chat = AsyncMock(return_value=_text_response("好的，我记住了。"))
         sid = agent.create_session()
         await agent.send_message_simple(sid, "记住：我喜欢喝咖啡")
 

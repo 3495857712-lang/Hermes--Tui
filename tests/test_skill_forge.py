@@ -173,9 +173,7 @@ class TestReflectionDraft:
         assert "Write a Python function" in p.title
         assert "reflection" in p.tags
 
-    def test_reflect_and_propose_prompt_includes_questions(
-        self, forge: SkillForge
-    ) -> None:
+    def test_reflect_and_propose_prompt_includes_questions(self, forge: SkillForge) -> None:
         p = forge.reflect_and_propose(
             task_description="Test",
             task_outcome="Done",

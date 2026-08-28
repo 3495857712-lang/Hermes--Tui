@@ -74,9 +74,7 @@ class StatusBar(Static):
         dot = "*" if self.connected else "o"
         status = "Connected" if self.connected else "Disconnected"
         color_class = "" if self.connected else " disconnected"
-        self._left.update(
-            f"[connection-dot{color_class}]{dot}[/] {status}"
-        )
+        self._left.update(f"[connection-dot{color_class}]{dot}[/] {status}")
         self._center.update(self.model_name)
         self._right.update(
             f"up {self.prompt_tokens} "

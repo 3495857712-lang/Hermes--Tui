@@ -142,9 +142,7 @@ class ThoughtGraphView(VerticalScroll):
                     detail_text = node.detail[:500]
                     if len(node.detail) > 500:
                         detail_text += "..."
-                    lines_widgets.append(
-                        Static(f"[tg-detail]{detail_text}[/]")
-                    )
+                    lines_widgets.append(Static(f"[tg-detail]{detail_text}[/]"))
 
         # Stats.
         stats = self._graph.stats()
@@ -184,11 +182,7 @@ class ThoughtGraphView(VerticalScroll):
 
         # Selection highlight.
         sel_class = " selected" if selected else ""
-        text = (
-            f"[tg-node{sel_class}]"
-            f"{marker} {icon} [{color}]{label}[/]{token_str}{tag_str}"
-            f"[/]"
-        )
+        text = f"[tg-node{sel_class}]{marker} {icon} [{color}]{label}[/]{token_str}{tag_str}[/]"
         widget = Static(text)
         widget.thread_id = node.id  # type: ignore[attr-defined]
         return widget
@@ -207,9 +201,7 @@ class ThoughtGraphView(VerticalScroll):
         """Move the selection cursor up or down."""
         if not self._visible_nodes:
             return
-        self.selected_index = max(
-            0, min(len(self._visible_nodes) - 1, self.selected_index + delta)
-        )
+        self.selected_index = max(0, min(len(self._visible_nodes) - 1, self.selected_index + delta))
         self._render_graph()
 
     def cycle_filter(self) -> None:

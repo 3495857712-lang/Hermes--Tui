@@ -51,9 +51,7 @@ class TestModels:
 
     def test_message_with_tool_calls(self) -> None:
         """LLMMessage should carry tool_calls."""
-        tool_calls = [
-            {"id": "call_1", "function": {"name": "x", "arguments": "{}"}}
-        ]
+        tool_calls = [{"id": "call_1", "function": {"name": "x", "arguments": "{}"}}]
         msg = LLMMessage(role="assistant", content="", tool_calls=tool_calls)
         d = msg.to_dict()
         assert d["tool_calls"] == tool_calls
@@ -74,9 +72,7 @@ class TestModels:
         """has_tool_calls should be True when tool_calls is non-empty."""
         resp = LLMResponse(
             content="",
-            tool_calls=[
-                {"id": "1", "function": {"name": "f", "arguments": "{}"}}
-            ],
+            tool_calls=[{"id": "1", "function": {"name": "f", "arguments": "{}"}}],
         )
         assert resp.has_tool_calls is True
 
@@ -161,9 +157,7 @@ class TestChat:
             return_value=httpx.Response(200, json=response)
         )
 
-        result = await client.chat(
-            [LLMMessage(role="user", content="What time?")]
-        )
+        result = await client.chat([LLMMessage(role="user", content="What time?")])
         assert result.has_tool_calls is True
         assert result.tool_calls[0]["function"]["name"] == "get_time"
         assert result.finish_reason == "tool_calls"
@@ -174,17 +168,13 @@ class TestChat:
     async def test_custom_headers(self) -> None:
         """Custom extra headers should be included in the request."""
         config = _make_config()
-        client = LLMClient(
-            config, extra_headers={"X-Custom-Header": "test-value"}
-        )
+        client = LLMClient(config, extra_headers={"X-Custom-Header": "test-value"})
 
         respx.post("http://localhost:11434/v1/chat/completions").mock(
             return_value=httpx.Response(
                 200,
                 json={
-                    "choices": [
-                        {"message": {"role": "assistant", "content": "ok"}}
-                    ],
+                    "choices": [{"message": {"role": "assistant", "content": "ok"}}],
                     "model": "test-model",
                     "usage": {},
                 },
@@ -236,9 +226,7 @@ class TestErrorHandling:
         """A 5xx response should trigger a retry and eventually succeed."""
         client = LLMClient(_make_config(max_retries=3))
 
-        route = respx.post(
-            "http://localhost:11434/v1/chat/completions"
-        ).mock(
+        route = respx.post("http://localhost:11434/v1/chat/completions").mock(
             side_effect=[
                 httpx.Response(500, text="Internal Server Error"),
                 httpx.Response(502, text="Bad Gateway"),
@@ -260,9 +248,7 @@ class TestErrorHandling:
             ]
         )
 
-        result = await client.chat(
-            [LLMMessage(role="user", content="hi")]
-        )
+        result = await client.chat([LLMMessage(role="user", content="hi")])
         assert result.content == "recovered"
         assert route.call_count == 3
         await client.close()
@@ -272,9 +258,7 @@ class TestErrorHandling:
         """A network connection error should trigger a retry."""
         client = LLMClient(_make_config(max_retries=3))
 
-        route = respx.post(
-            "http://localhost:11434/v1/chat/completions"
-        ).mock(
+        route = respx.post("http://localhost:11434/v1/chat/completions").mock(
             side_effect=[
                 httpx.ConnectError("Connection refused"),
                 httpx.ConnectError("Connection refused"),
@@ -296,9 +280,7 @@ class TestErrorHandling:
             ]
         )
 
-        result = await client.chat(
-            [LLMMessage(role="user", content="hi")]
-        )
+        result = await client.chat([LLMMessage(role="user", content="hi")])
         assert result.content == "ok"
         assert route.call_count == 3
         await client.close()
@@ -343,9 +325,7 @@ class TestStreaming:
         )
 
         chunks: list[str] = []
-        async for chunk in client.stream_chat(
-            [LLMMessage(role="user", content="Hi")]
-        ):
+        async for chunk in client.stream_chat([LLMMessage(role="user", content="Hi")]):
             chunks.append(chunk)
 
         assert "".join(chunks) == "Hello world!"
@@ -366,9 +346,7 @@ class TestStreaming:
         )
 
         chunks: list[str] = []
-        async for chunk in client.stream_chat(
-            [LLMMessage(role="user", content="Hi")]
-        ):
+        async for chunk in client.stream_chat([LLMMessage(role="user", content="Hi")]):
             chunks.append(chunk)
 
         assert chunks == []

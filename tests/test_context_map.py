@@ -19,9 +19,7 @@ def cm() -> ContextMap:
 
 class TestAddAndRemove:
     def test_add_item(self, cm: ContextMap) -> None:
-        item = cm.add(
-            ContextSource.USER_MESSAGE, "Hello", "Hello world", token_count=10
-        )
+        item = cm.add(ContextSource.USER_MESSAGE, "Hello", "Hello world", token_count=10)
         assert item.id.startswith("ctx-")
         assert item.estimated_tokens() == 10
         assert len(cm.items()) == 1
@@ -66,9 +64,7 @@ class TestPinning:
         assert item.pinned is True
 
     def test_unpin_item(self, cm: ContextMap) -> None:
-        item = cm.add(
-            ContextSource.SYSTEM, "System", "sys", token_count=100, pinned=True
-        )
+        item = cm.add(ContextSource.SYSTEM, "System", "sys", token_count=100, pinned=True)
         assert cm.unpin(item.id) is True
         assert item.pinned is False
 

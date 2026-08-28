@@ -165,9 +165,7 @@ Respond as JSON with this structure:
                 response = await self._llm(prompt, temperature=0.3)
                 result = self._parse_reflection(response, outcome)
             except Exception as exc:
-                logger.warning(
-                    "LLM reflection failed, falling back to heuristic: %s", exc
-                )
+                logger.warning("LLM reflection failed, falling back to heuristic: %s", exc)
                 result = self._heuristic_reflect(outcome)
         else:
             result = self._heuristic_reflect(outcome)
@@ -199,13 +197,13 @@ Respond as JSON with this structure:
         )
         return result
 
-    def _build_prompt(
-        self, outcome: TaskOutcome, existing_skills: list[dict[str, Any]]
-    ) -> str:
-        skills_text = "\n".join(
-            f"- {s.get('name', '?')}: {s.get('description', '')[:100]}"
-            for s in existing_skills
-        ) or "(none)"
+    def _build_prompt(self, outcome: TaskOutcome, existing_skills: list[dict[str, Any]]) -> str:
+        skills_text = (
+            "\n".join(
+                f"- {s.get('name', '?')}: {s.get('description', '')[:100]}" for s in existing_skills
+            )
+            or "(none)"
+        )
         return self.REFLECTION_PROMPT_TEMPLATE.format(
             task_description=outcome.description,
             success="yes" if outcome.success else "no",
@@ -218,9 +216,7 @@ Respond as JSON with this structure:
             skills_inventory=skills_text,
         )
 
-    def _parse_reflection(
-        self, response: str, outcome: TaskOutcome
-    ) -> ReflectionResult:
+    def _parse_reflection(self, response: str, outcome: TaskOutcome) -> ReflectionResult:
         """Parse the LLM's JSON response into a ReflectionResult."""
         # Try to extract JSON from markdown code fences or plain text.
         text = response.strip()
@@ -277,10 +273,14 @@ Respond as JSON with this structure:
             )
 
         if outcome.user_feedback:
-            sentiment = "positive" if any(
-                w in outcome.user_feedback.lower()
-                for w in ["thanks", "great", "good", "perfect", "谢谢", "好"]
-            ) else "needs_attention"
+            sentiment = (
+                "positive"
+                if any(
+                    w in outcome.user_feedback.lower()
+                    for w in ["thanks", "great", "good", "perfect", "谢谢", "好"]
+                )
+                else "needs_attention"
+            )
             insights.append(
                 ReflectionInsight(
                     category="improvement" if sentiment == "needs_attention" else "pattern",
@@ -309,7 +309,9 @@ Respond as JSON with this structure:
             proposal_type = ProposalType.NEW_SKILL
 
         self.forge.create_proposal(
-            title=change.get("title", f"Skill change from reflection on {outcome.description[:40]}"),
+            title=change.get(
+                "title", f"Skill change from reflection on {outcome.description[:40]}"
+            ),
             description=change.get("rationale", "")
             + f"\n\nSelf-assessment: {reflection.self_assessment}",
             proposal_type=proposal_type,
@@ -330,8 +332,7 @@ Respond as JSON with this structure:
         lines = [f"## Reflection History (last {min(limit, len(self._history))})", ""]
         for r in self._history[-limit:]:
             lines.append(
-                f"### {r.timestamp.strftime('%Y-%m-%d %H:%M')} "
-                f"(confidence: {r.confidence:.2f})"
+                f"### {r.timestamp.strftime('%Y-%m-%d %H:%M')} (confidence: {r.confidence:.2f})"
             )
             if r.self_assessment:
                 lines.append(r.self_assessment)

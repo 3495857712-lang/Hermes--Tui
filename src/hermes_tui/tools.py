@@ -24,8 +24,17 @@ import httpx
 logger = logging.getLogger(__name__)
 
 _SENSITIVE_PARTS = {".ssh", ".gnupg", ".aws", ".config"}
-_SENSITIVE_NAMES = {"id_rsa", "id_dsa", "id_ecdsa", "id_ed25519",
-                    "shadow", "sudoers", "passwd", ".env", "credentials"}
+_SENSITIVE_NAMES = {
+    "id_rsa",
+    "id_dsa",
+    "id_ecdsa",
+    "id_ed25519",
+    "shadow",
+    "sudoers",
+    "passwd",
+    ".env",
+    "credentials",
+}
 MAX_FILE_SIZE = 100 * 1024  # 100 KB
 _MAX_FILE_BYTES = MAX_FILE_SIZE
 
@@ -40,12 +49,18 @@ _PY_TO_JSON = {
 
 # PEP 563 deferred annotations arrive as strings; map them here.
 _NAME_TO_JSON = {
-    "str": "string", "string": "string",
-    "int": "integer", "integer": "integer",
-    "float": "number", "number": "number",
-    "bool": "boolean", "boolean": "boolean",
-    "list": "array", "array": "array",
-    "dict": "object", "object": "object",
+    "str": "string",
+    "string": "string",
+    "int": "integer",
+    "integer": "integer",
+    "float": "number",
+    "number": "number",
+    "bool": "boolean",
+    "boolean": "boolean",
+    "list": "array",
+    "array": "array",
+    "dict": "object",
+    "object": "object",
 }
 
 
@@ -148,21 +163,34 @@ class ToolRegistry:
         called directly (``registry.register(func, name=...)``).
         """
         # Called directly with a function as first positional arg.
-        if callable(func_or_name) and name is None and description is None and parameters is None and not kwargs:
+        if (
+            callable(func_or_name)
+            and name is None
+            and description is None
+            and parameters is None
+            and not kwargs
+        ):
             return self._register_func(func_or_name)
         if callable(func_or_name):
             return self._register_func(
-                func_or_name, name=name, description=description,
+                func_or_name,
+                name=name,
+                description=description,
                 parameters=parameters,
             )
+
         # Used as a decorator with/without kwargs: @register(...)
         def _decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             tool_name = name or func_or_name or func.__name__
             self._register_func(
-                func, name=tool_name, description=description,
-                parameters=parameters, **kwargs,
+                func,
+                name=tool_name,
+                description=description,
+                parameters=parameters,
+                **kwargs,
             )
             return func
+
         return _decorator
 
     def _register_func(
@@ -177,8 +205,10 @@ class ToolRegistry:
         if parameters is None:
             parameters = self._infer_params(func)
         self._tools[tool_name] = ToolDefinition(
-            name=tool_name, description=tool_desc,
-            parameters=list(parameters), handler=func,
+            name=tool_name,
+            description=tool_desc,
+            parameters=list(parameters),
+            handler=func,
         )
         logger.debug("Registered tool: %s", tool_name)
         return func
@@ -192,9 +222,13 @@ class ToolRegistry:
                 continue
             required = param.default is inspect.Parameter.empty
             ptype = _py_type_to_json(param.annotation)
-            params.append(ToolParameter(
-                name=pname, type=ptype, required=required,
-            ))
+            params.append(
+                ToolParameter(
+                    name=pname,
+                    type=ptype,
+                    required=required,
+                )
+            )
         return params
 
     # -- query / execution ----------------------------------------------
@@ -210,8 +244,7 @@ class ToolRegistry:
 
     def list_tools(self) -> list[dict[str, Any]]:
         """Return OpenAI function schemas for enabled tools."""
-        return [t.to_openai_schema() for t in self._tools.values()
-                if self._is_enabled(t.name)]
+        return [t.to_openai_schema() for t in self._tools.values() if self._is_enabled(t.name)]
 
     def list_names(self) -> list[str]:
         return [n for n in self._tools if self._is_enabled(n)]
@@ -259,6 +292,7 @@ class ToolRegistry:
 # Path safety helpers
 # ----------------------------------------------------------------------
 
+
 def _is_sensitive(path: Path) -> bool:
     parts = {p.lower() for p in path.parts}
     if parts & _SENSITIVE_PARTS:
@@ -288,6 +322,7 @@ def _resolve_workspace(path: str, workspace: str | Path | None) -> Path:
 # ----------------------------------------------------------------------
 # Built-in tool implementations (public, importable)
 # ----------------------------------------------------------------------
+
 
 def get_time() -> str:
     """Return the current UTC date and time."""
@@ -367,6 +402,7 @@ async def web_search(query: str, num_results: int = 5) -> str:
 # Registry factories
 # ----------------------------------------------------------------------
 
+
 def create_default_registry(
     workspace: str | Path | None = None,
     enabled_tools: list[str] | None = None,
@@ -382,8 +418,7 @@ def create_default_registry(
         description="Search the web and return titles + URLs.",
         parameters=[
             ToolParameter("query", "string", "Search query", required=True),
-            ToolParameter("num_results", "integer", "Max results (1-10)",
-                          required=False),
+            ToolParameter("num_results", "integer", "Max results (1-10)", required=False),
         ],
     )
     logger.info("Default tool registry created: %s", registry.list_names())

@@ -329,9 +329,7 @@ class PipeCommandRegistry:
                 regex = re.compile(pattern, re.IGNORECASE)
             except re.error:
                 return f"[invalid regex: {pattern}]"
-            return "\n".join(
-                line for line in text.splitlines() if regex.search(line)
-            )
+            return "\n".join(line for line in text.splitlines() if regex.search(line))
 
         @self.register(
             "context",
@@ -396,7 +394,7 @@ class PipeCommandRegistry:
             action = sub[0] if sub else "list"
             forge = getattr(ctx.agent, "skill_forge", None) if ctx.agent else None
             if action == "list" and forge:
-                return forge.render_queue()
+                return str(forge.render_queue())
             if action == "propose" and forge:
                 proposal = forge.reflect_and_propose(
                     task_description=text[:200],
@@ -447,9 +445,7 @@ class PipeCommandRegistry:
                 loaded = skills.list_skills()
                 if not loaded:
                     return "No skills loaded."
-                return "\n".join(
-                    f"- {s.name}: {s.description[:80]}" for s in loaded
-                )
+                return "\n".join(f"- {s.name}: {s.description[:80]}" for s in loaded)
             return f"/skill {action}: (not yet implemented)"
 
         @self.register(

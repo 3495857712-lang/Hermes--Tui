@@ -29,9 +29,7 @@ def engine(forge: SkillForge, graph: ThoughtGraph) -> ReflectionEngine:
 
 
 class TestHeuristicReflection:
-    def test_failed_task_creates_antipattern(
-        self, engine: ReflectionEngine
-    ) -> None:
+    def test_failed_task_creates_antipattern(self, engine: ReflectionEngine) -> None:
         outcome = TaskOutcome(
             description="Search for a file",
             success=False,
@@ -44,9 +42,7 @@ class TestHeuristicReflection:
         assert any(i.category == "antipattern" for i in result.insights)
         assert any("FileNotFoundError" in i.description for i in result.insights)
 
-    def test_successful_tools_creates_pattern(
-        self, engine: ReflectionEngine
-    ) -> None:
+    def test_successful_tools_creates_pattern(self, engine: ReflectionEngine) -> None:
         outcome = TaskOutcome(
             description="Search the web",
             success=True,
@@ -57,9 +53,7 @@ class TestHeuristicReflection:
         result = asyncio.new_event_loop().run_until_complete(engine.reflect(outcome))
         assert any(i.category == "pattern" for i in result.insights)
 
-    def test_positive_user_feedback(
-        self, engine: ReflectionEngine
-    ) -> None:
+    def test_positive_user_feedback(self, engine: ReflectionEngine) -> None:
         outcome = TaskOutcome(
             description="Write code",
             success=True,
@@ -70,9 +64,7 @@ class TestHeuristicReflection:
         result = asyncio.new_event_loop().run_until_complete(engine.reflect(outcome))
         assert len(result.insights) > 0
 
-    def test_empty_outcome(
-        self, engine: ReflectionEngine
-    ) -> None:
+    def test_empty_outcome(self, engine: ReflectionEngine) -> None:
         outcome = TaskOutcome(description="Nothing", success=True)
         import asyncio
 
@@ -82,11 +74,9 @@ class TestHeuristicReflection:
 
 class TestLLMReflection:
     @pytest.mark.asyncio
-    async def test_llm_reflection_parses_json(
-        self, forge: SkillForge, graph: ThoughtGraph
-    ) -> None:
+    async def test_llm_reflection_parses_json(self, forge: SkillForge, graph: ThoughtGraph) -> None:
         async def mock_llm(prompt: str, **kwargs: object) -> str:
-            return '''
+            return """
             {
               "self_assessment": "I did well on this task.",
               "insights": [
@@ -109,7 +99,7 @@ class TestLLMReflection:
               ],
               "confidence": 0.85
             }
-            '''
+            """
 
         engine = ReflectionEngine(forge, graph, llm=mock_llm)
         outcome = TaskOutcome(description="Test", success=True)
@@ -143,7 +133,7 @@ class TestLLMReflection:
         self, forge: SkillForge, graph: ThoughtGraph
     ) -> None:
         async def mock_llm(prompt: str, **kwargs: object) -> str:
-            return '''
+            return """
             {
               "self_assessment": "Good",
               "insights": [
@@ -161,7 +151,7 @@ class TestLLMReflection:
               ],
               "confidence": 0.9
             }
-            '''
+            """
 
         engine = ReflectionEngine(forge, graph, llm=mock_llm)
         outcome = TaskOutcome(description="Test", success=True)
@@ -185,9 +175,7 @@ class TestThoughtGraphIntegration:
 
 
 class TestHistory:
-    def test_history_accumulates(
-        self, engine: ReflectionEngine
-    ) -> None:
+    def test_history_accumulates(self, engine: ReflectionEngine) -> None:
         import asyncio
 
         loop = asyncio.new_event_loop()

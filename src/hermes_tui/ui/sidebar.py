@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from textual.containers import Vertical
 from textual.reactive import reactive
@@ -12,7 +12,7 @@ from ..memory import MemoryManager
 from ..skills import SkillLoader
 
 if TYPE_CHECKING:  # pragma: no cover
-    from ..agent import Session
+    Session = dict[str, Any]
 
 
 class Sidebar(Vertical):
@@ -130,31 +130,21 @@ class Sidebar(Vertical):
         dot = "*" if self.connected else "o"
         label = "Connected" if self.connected else "Disconnected"
         cls = "" if self.connected else " disconnected"
-        self._connection.update(
-            f"[sidebar-title]Status[/]\n"
-            f"[connection-dot{cls}]{dot}[/] {label}"
-        )
+        self._connection.update(f"[sidebar-title]Status[/]\n[connection-dot{cls}]{dot}[/] {label}")
 
         self._model_info.update(
-            f"[sidebar-title]Model[/]\n"
-            f"[sidebar-item]{self.provider} / {self.model_name}[/]"
+            f"[sidebar-title]Model[/]\n[sidebar-item]{self.provider} / {self.model_name}[/]"
         )
 
         # Skills
         if self._skills is not None:
             skills = self._skills.list_skills()
             if skills:
-                lines = [
-                    f"[sidebar-item]- {s.name}: {s.description[:40]}[/]"
-                    for s in skills[:10]
-                ]
-                self._skills_section.update(
-                    "[sidebar-title]Skills[/]\n" + "\n".join(lines)
-                )
+                lines = [f"[sidebar-item]- {s.name}: {s.description[:40]}[/]" for s in skills[:10]]
+                self._skills_section.update("[sidebar-title]Skills[/]\n" + "\n".join(lines))
             else:
                 self._skills_section.update(
-                    "[sidebar-title]Skills[/]\n"
-                    "[sidebar-item]No skills loaded[/]"
+                    "[sidebar-title]Skills[/]\n[sidebar-item]No skills loaded[/]"
                 )
 
         # Memory
@@ -171,15 +161,9 @@ class Sidebar(Vertical):
 
         # Sessions
         if self._sessions:
-            lines = [
-                f"[sidebar-item]- {s.title[:28]}[/]"
-                for s in self._sessions[:15]
-            ]
-            self._sessions_section.update(
-                "[sidebar-title]Sessions[/]\n" + "\n".join(lines)
-            )
+            lines = [f"[sidebar-item]- {s.title[:28]}[/]" for s in self._sessions[:15]]
+            self._sessions_section.update("[sidebar-title]Sessions[/]\n" + "\n".join(lines))
         else:
             self._sessions_section.update(
-                "[sidebar-title]Sessions[/]\n"
-                "[sidebar-item]No saved sessions[/]"
+                "[sidebar-title]Sessions[/]\n[sidebar-item]No saved sessions[/]"
             )

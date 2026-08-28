@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 # Data models
 # ------------------------------------------------------------------
 
+
 @dataclass
 class LLMMessage:
     """A chat message sent to or received from the LLM."""
@@ -72,7 +73,7 @@ class LLMMessage:
                             entry[k] = v
                     normalized.append(entry)
                 else:  # pragma: no cover - defensive
-                    normalized.append(tc)  # type: ignore[arg-type]
+                    normalized.append(tc)
             msg["tool_calls"] = normalized
         return msg
 
@@ -94,11 +95,13 @@ class LLMMessage:
                             args = {"_raw": raw_args}
                     else:
                         args = raw_args or {}
-                    tool_calls.append({
-                        "id": tc.get("id", ""),
-                        "type": tc.get("type", "function"),
-                        "function": {"name": fn.get("name", ""), "arguments": args},
-                    })
+                    tool_calls.append(
+                        {
+                            "id": tc.get("id", ""),
+                            "type": tc.get("type", "function"),
+                            "function": {"name": fn.get("name", ""), "arguments": args},
+                        }
+                    )
         return cls(
             role=data["role"],
             content=data.get("content") or "",
@@ -182,7 +185,8 @@ class LLMClient:
         )
         logger.info(
             "LLMClient initialised: base_url=%s model=%s",
-            self.base_url, self.model,
+            self.base_url,
+            self.model,
         )
 
     # ------------------------------------------------------------------
@@ -225,14 +229,16 @@ class LLMClient:
                     arguments = {"_raw": raw_args}
             else:
                 arguments = raw_args or {}
-            result.append({
-                "id": tc.get("id", ""),
-                "type": tc.get("type", "function"),
-                "function": {
-                    "name": fn.get("name", ""),
-                    "arguments": arguments,
-                },
-            })
+            result.append(
+                {
+                    "id": tc.get("id", ""),
+                    "type": tc.get("type", "function"),
+                    "function": {
+                        "name": fn.get("name", ""),
+                        "arguments": arguments,
+                    },
+                }
+            )
         return result
 
     @staticmethod
@@ -247,9 +253,7 @@ class LLMClient:
             return ServerError(f"Server error ({status_code}): {body}")
         return LLMError(f"Unexpected error ({status_code}): {body}")
 
-    async def _post_with_retry(
-        self, url: str, payload: dict[str, Any]
-    ) -> httpx.Response:
+    async def _post_with_retry(self, url: str, payload: dict[str, Any]) -> httpx.Response:
         attempts = self._max_retries
         last_exc: Exception | None = None
         for attempt in range(1, attempts + 1):
@@ -261,7 +265,9 @@ class LLMClient:
                     wait = _BACKOFF_BASE * (2 ** (attempt - 1))
                     logger.warning(
                         "Network error (attempt %d/%d): %s - retrying",
-                        attempt, attempts, exc,
+                        attempt,
+                        attempts,
+                        exc,
                     )
                     await asyncio.sleep(wait)
                     continue
@@ -273,7 +279,9 @@ class LLMClient:
                 wait = _BACKOFF_BASE * (2 ** (attempt - 1))
                 logger.warning(
                     "Server %s (attempt %d/%d) - retrying",
-                    resp.status_code, attempt, attempts,
+                    resp.status_code,
+                    attempt,
+                    attempts,
                 )
                 await asyncio.sleep(wait)
                 continue
@@ -330,20 +338,16 @@ class LLMClient:
             req = self._client.build_request("POST", "/chat/completions", json=payload)
             resp = await self._client.send(req, stream=True)
         except httpx.RequestError as exc:
-            raise LLMConnectionError(
-                f"Streaming connection failed: {exc}"
-            ) from exc
+            raise LLMConnectionError(f"Streaming connection failed: {exc}") from exc
 
         if resp.status_code >= 400:
             body = await resp.aread()
-            raise self._classify_error(
-                resp.status_code, body.decode("utf-8", "replace")
-            )
+            raise self._classify_error(resp.status_code, body.decode("utf-8", "replace"))
 
         async for line in resp.aiter_lines():
             if not line or not line.startswith("data:"):
                 continue
-            data_str = line[len("data:"):].strip()
+            data_str = line[len("data:") :].strip()
             if data_str == "[DONE]":
                 break
             try:

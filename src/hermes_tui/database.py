@@ -200,7 +200,7 @@ class DatabaseManager:
     def execute(
         self,
         sql: str,
-        params: tuple | dict = (),
+        params: tuple[Any, ...] | dict[str, Any] = (),
     ) -> sqlite3.Cursor:
         """Execute a single statement and return the cursor."""
         with self.cursor() as cur:
@@ -210,22 +210,22 @@ class DatabaseManager:
     def fetch_one(
         self,
         sql: str,
-        params: tuple | dict = (),
+        params: tuple[Any, ...] | dict[str, Any] = (),
     ) -> sqlite3.Row | None:
         """Execute a query and return the first row (or ``None``)."""
         with self.cursor() as cur:
             cur.execute(sql, params)
-            return cur.fetchone()
+            return cur.fetchone()  # type: ignore[no-any-return]
 
     def fetch_all(
         self,
         sql: str,
-        params: tuple | dict = (),
+        params: tuple[Any, ...] | dict[str, Any] = (),
     ) -> list[sqlite3.Row]:
         """Execute a query and return all rows."""
         with self.cursor() as cur:
             cur.execute(sql, params)
-            return cur.fetchall()
+            return list(cur.fetchall())
 
     # ------------------------------------------------------------------
     # High-level CRUD helpers (used by the test suite and higher layers)
@@ -253,30 +253,34 @@ class DatabaseManager:
             )
         return memory_id
 
-    def get_memory(self, memory_id: str):
+    def get_memory(self, memory_id: str) -> sqlite3.Row | None:
         row = self.fetch_one("SELECT * FROM memories WHERE id=?", (memory_id,))
         if row is not None:
             self.execute(
-                "UPDATE memories SET accessed_at=?, access_count=access_count+1 "
-                "WHERE id=?", (datetime.now(UTC), memory_id))
+                "UPDATE memories SET accessed_at=?, access_count=access_count+1 WHERE id=?",
+                (datetime.now(UTC), memory_id),
+            )
             row = self.fetch_one("SELECT * FROM memories WHERE id=?", (memory_id,))
         return row
 
-    def get_memory_by_key(self, key: str):
+    def get_memory_by_key(self, key: str) -> sqlite3.Row | None:
         return self.fetch_one(
-            "SELECT * FROM memories WHERE key=? ORDER BY created_at DESC, id DESC "
-            "LIMIT 1", (key,))
+            "SELECT * FROM memories WHERE key=? ORDER BY created_at DESC, id DESC LIMIT 1", (key,)
+        )
 
-    def search_memories(self, query: str, layer: str | None = None,
-                        limit: int = 10):
+    def search_memories(
+        self, query: str, layer: str | None = None, limit: int = 10
+    ) -> list[sqlite3.Row]:
         """Full-text search memories with LIKE fallback for CJK text."""
         # FTS5 MATCH works well for tokenised languages but not for CJK.
         # Try FTS first; if no results, fall back to LIKE.
-        sql = ("SELECT m.* FROM memories m "
-               "JOIN memories_fts_map fmap ON fmap.memory_id = m.id "
-               "JOIN memories_fts f ON f.rowid = fmap.fts_rowid "
-               "WHERE f.memories_fts MATCH ? ")
-        params: list = [query]
+        sql = (
+            "SELECT m.* FROM memories m "
+            "JOIN memories_fts_map fmap ON fmap.memory_id = m.id "
+            "JOIN memories_fts f ON f.rowid = fmap.fts_rowid "
+            "WHERE f.memories_fts MATCH ? "
+        )
+        params: list[Any] = [query]
         if layer:
             sql += "AND m.layer=? "
             params.append(layer)
@@ -287,9 +291,8 @@ class DatabaseManager:
             return rows
 
         # Fallback: LIKE search across content / key / tags
-        like_sql = ("SELECT * FROM memories WHERE "
-                    "(content LIKE ? OR key LIKE ? OR tags LIKE ?) ")
-        like_params: list = [f"%{query}%"] * 3
+        like_sql = "SELECT * FROM memories WHERE (content LIKE ? OR key LIKE ? OR tags LIKE ?) "
+        like_params: list[Any] = [f"%{query}%"] * 3
         if layer:
             like_sql += "AND layer=? "
             like_params.append(layer)
@@ -299,8 +302,7 @@ class DatabaseManager:
 
     def count_memories(self, layer: str | None = None) -> int:
         if layer:
-            row = self.fetch_one(
-                "SELECT COUNT(*) AS cnt FROM memories WHERE layer=?", (layer,))
+            row = self.fetch_one("SELECT COUNT(*) AS cnt FROM memories WHERE layer=?", (layer,))
         else:
             row = self.fetch_one("SELECT COUNT(*) AS cnt FROM memories")
         return row["cnt"] if row else 0
@@ -314,11 +316,14 @@ class DatabaseManager:
             self.execute(
                 "DELETE FROM memories WHERE id IN (SELECT id FROM memories "
                 "WHERE layer=? ORDER BY accessed_at ASC, created_at ASC LIMIT ?)",
-                (layer, over))
+                (layer, over),
+            )
         else:
             self.execute(
                 "DELETE FROM memories WHERE id IN (SELECT id FROM memories "
-                "ORDER BY accessed_at ASC, created_at ASC LIMIT ?)", (over,))
+                "ORDER BY accessed_at ASC, created_at ASC LIMIT ?)",
+                (over,),
+            )
         return over
 
     def clear_memories(self, layer: str | None = None) -> int:
@@ -332,17 +337,18 @@ class DatabaseManager:
     # -- sessions -------------------------------------------------------
     def create_session(self, session_id: str, title: str = "") -> None:
         self.execute(
-            "INSERT OR IGNORE INTO sessions (id,title,message_count) "
-            "VALUES (?,?,0)", (session_id, title))
+            "INSERT OR IGNORE INTO sessions (id,title,message_count) VALUES (?,?,0)",
+            (session_id, title),
+        )
 
-    def get_session(self, session_id: str) -> dict | None:
+    def get_session(self, session_id: str) -> dict[str, Any] | None:
         row = self.fetch_one("SELECT * FROM sessions WHERE id=?", (session_id,))
         return dict(row) if row else None
 
-    def list_sessions(self, limit: int = 50) -> list[dict]:
+    def list_sessions(self, limit: int = 50) -> list[dict[str, Any]]:
         rows = self.fetch_all(
-            "SELECT * FROM sessions ORDER BY updated_at DESC, id DESC LIMIT ?",
-            (limit,))
+            "SELECT * FROM sessions ORDER BY updated_at DESC, id DESC LIMIT ?", (limit,)
+        )
         return [dict(r) for r in rows]
 
     def delete_session(self, session_id: str) -> bool:
@@ -352,7 +358,8 @@ class DatabaseManager:
     def update_session_title(self, session_id: str, title: str) -> None:
         self.execute(
             "UPDATE sessions SET title=?, updated_at=? WHERE id=?",
-            (title, datetime.now(UTC), session_id))
+            (title, datetime.now(UTC), session_id),
+        )
 
     # -- messages -------------------------------------------------------
     def insert_message(
@@ -367,25 +374,29 @@ class DatabaseManager:
     ) -> str:
         if not isinstance(tool_calls, str):
             import json as _json
+
             tool_calls = _json.dumps(tool_calls or [], ensure_ascii=False)
         now = datetime.now(UTC)
         with self.cursor() as cur:
             cur.execute(
                 "INSERT INTO messages (id,session_id,role,content,tool_calls,"
                 "tool_call_id,name,created_at) VALUES (?,?,?,?,?,?,?,?)",
-                (message_id, session_id, role, content, tool_calls,
-                 tool_call_id, name, now))
+                (message_id, session_id, role, content, tool_calls, tool_call_id, name, now),
+            )
             cur.execute(
-                "UPDATE sessions SET message_count=message_count+1, updated_at=? "
-                "WHERE id=?", (now, session_id))
+                "UPDATE sessions SET message_count=message_count+1, updated_at=? WHERE id=?",
+                (now, session_id),
+            )
         return message_id
 
-    def get_messages(self, session_id: str, limit: int = 100):
+    def get_messages(self, session_id: str, limit: int = 100) -> list[dict[str, Any]]:
         rows = self.fetch_all(
-            "SELECT * FROM messages WHERE session_id=? "
-            "ORDER BY created_at ASC, id ASC LIMIT ?", (session_id, limit))
-        out = []
+            "SELECT * FROM messages WHERE session_id=? ORDER BY created_at ASC, id ASC LIMIT ?",
+            (session_id, limit),
+        )
+        out: list[dict[str, Any]] = []
         import json as _json
+
         for r in rows:
             d = dict(r)
             try:
@@ -406,6 +417,7 @@ class DatabaseManager:
         enabled: bool = True,
     ) -> None:
         import json as _json
+
         if not isinstance(tags, str):
             tags = _json.dumps(tags or [], ensure_ascii=False)
         now = datetime.now(UTC)
@@ -416,14 +428,16 @@ class DatabaseManager:
             "description=excluded.description, version=excluded.version, "
             "file_path=excluded.file_path, tags=excluded.tags, "
             "enabled=excluded.enabled",
-            (name, description, version, file_path, tags, int(bool(enabled)), now))
+            (name, description, version, file_path, tags, int(bool(enabled)), now),
+        )
 
-    def get_skill_meta(self, name: str):
+    def get_skill_meta(self, name: str) -> dict[str, Any] | None:
         row = self.fetch_one("SELECT * FROM skills_meta WHERE name=?", (name,))
         if row is None:
             return None
         d = dict(row)
         import json as _json
+
         try:
             d["tags"] = _json.loads(d.get("tags") or "[]")
         except (ValueError, TypeError):
@@ -431,10 +445,11 @@ class DatabaseManager:
         d["enabled"] = bool(d.get("enabled"))
         return d
 
-    def list_skills_meta(self):
+    def list_skills_meta(self) -> list[dict[str, Any]]:
         rows = self.fetch_all("SELECT * FROM skills_meta ORDER BY name")
-        out = []
+        out: list[dict[str, Any]] = []
         import json as _json
+
         for r in rows:
             d = dict(r)
             try:
@@ -446,13 +461,13 @@ class DatabaseManager:
         return out
 
     def set_skill_enabled(self, name: str, enabled: bool) -> None:
-        self.execute("UPDATE skills_meta SET enabled=? WHERE name=?",
-                     (int(bool(enabled)), name))
+        self.execute("UPDATE skills_meta SET enabled=? WHERE name=?", (int(bool(enabled)), name))
 
     def increment_skill_use_count(self, name: str) -> None:
         self.execute(
-            "UPDATE skills_meta SET use_count=use_count+1, last_used=? "
-            "WHERE name=?", (datetime.now(UTC), name))
+            "UPDATE skills_meta SET use_count=use_count+1, last_used=? WHERE name=?",
+            (datetime.now(UTC), name),
+        )
 
     @property
     def schema_version(self) -> int:

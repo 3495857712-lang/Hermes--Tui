@@ -220,9 +220,7 @@ class TestWebSearch:
 
     async def test_web_search_no_results(self) -> None:
         """web_search with no results should return a 'no results' message."""
-        mock_response = httpx.Response(
-            200, text="<html><body>No results</body></html>"
-        )
+        mock_response = httpx.Response(200, text="<html><body>No results</body></html>")
         with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
             mock_get.return_value = mock_response
             from hermes_tui.tools import web_search

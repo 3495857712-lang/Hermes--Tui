@@ -27,9 +27,7 @@ class TestInitSchema:
         conn = db._get_conn()
         tables = {
             row[0]
-            for row in conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            ).fetchall()
+            for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
         }
         assert "memories" in tables
         assert "sessions" in tables
@@ -99,12 +97,8 @@ class TestMemoryCRUD:
 
     def test_get_memory_by_key(self, db: DatabaseManager) -> None:
         """Getting memory by key should return the latest matching entry."""
-        db.insert_memory(
-            generate_id(), "semantic", "Python 3.11", key="python_version"
-        )
-        db.insert_memory(
-            generate_id(), "semantic", "Python 3.12", key="python_version"
-        )
+        db.insert_memory(generate_id(), "semantic", "Python 3.11", key="python_version")
+        db.insert_memory(generate_id(), "semantic", "Python 3.12", key="python_version")
 
         row = db.get_memory_by_key("python_version")
         assert row is not None
@@ -169,9 +163,7 @@ class TestMessages:
         """Messages with tool_calls JSON should be stored and retrieved."""
         sid = generate_id()
         db.create_session(sid)
-        tool_calls = [
-            {"id": "call_1", "function": {"name": "get_time", "arguments": "{}"}}
-        ]
+        tool_calls = [{"id": "call_1", "function": {"name": "get_time", "arguments": "{}"}}]
         db.insert_message(
             generate_id(),
             sid,

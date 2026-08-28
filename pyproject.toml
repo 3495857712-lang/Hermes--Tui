@@ -104,8 +104,16 @@ warn_unused_configs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["textual.*", "httpx.*", "markdown_it.*", "tenacity.*"]
+module = ["textual.*", "httpx.*", "markdown_it.*", "yaml"]
 ignore_missing_imports = true
+
+# Textual UI bindings are dynamically typed; keep checks on core packages.
+[[tool.mypy.overrides]]
+module = ["hermes_tui.ui.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_return_any = false
+disable_error_code = ["arg-type", "attr-defined", "operator", "type-arg", "misc", "unused-ignore"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

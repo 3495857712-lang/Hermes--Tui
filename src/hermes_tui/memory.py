@@ -29,11 +29,23 @@ LAYER_PROCEDURAL = "procedural"
 _VALID_LAYERS = {LAYER_WORKING, LAYER_EPISODIC, LAYER_PROCEDURAL}
 
 _MEMORY_KEYWORDS = (
-    "记住", "别忘了", "记得",
-    "我的", "我偏好", "我喜欢",
-    "我不喜欢", "我叫", "我是",
-    "remember", "don't forget", "my name", "i prefer", "i like",
-    "i always", "note that", "keep in mind",
+    "记住",
+    "别忘了",
+    "记得",
+    "我的",
+    "我偏好",
+    "我喜欢",
+    "我不喜欢",
+    "我叫",
+    "我是",
+    "remember",
+    "don't forget",
+    "my name",
+    "i prefer",
+    "i like",
+    "i always",
+    "note that",
+    "keep in mind",
 )
 
 
@@ -55,8 +67,7 @@ class MemoryEntry:
     def __post_init__(self) -> None:
         if self.layer not in _VALID_LAYERS:
             raise ValueError(
-                f"Invalid layer '{self.layer}'. "
-                f"Must be one of: {sorted(_VALID_LAYERS)}"
+                f"Invalid layer '{self.layer}'. Must be one of: {sorted(_VALID_LAYERS)}"
             )
 
     def to_dict(self) -> dict[str, Any]:
@@ -122,9 +133,7 @@ class MemoryManager:
         """Store a new memory, rejecting prompt-injection content."""
         detected, patterns = detect_prompt_injection(content)
         if detected:
-            raise ValueError(
-                f"Potential prompt injection detected in memory: {patterns}"
-            )
+            raise ValueError(f"Potential prompt injection detected in memory: {patterns}")
         tag_str = ",".join(tags or [])
         meta_str = json.dumps(metadata or {}, ensure_ascii=False)
         now = datetime.now(UTC)
@@ -136,9 +145,14 @@ class MemoryManager:
                 (mid, layer, key, content, tag_str, meta_str, now, now),
             )
         entry = MemoryEntry(
-            id=mid, layer=layer, key=key, content=content,
-            tags=tags or [], metadata=metadata or {},
-            created_at=now, accessed_at=now,
+            id=mid,
+            layer=layer,
+            key=key,
+            content=content,
+            tags=tags or [],
+            metadata=metadata or {},
+            created_at=now,
+            accessed_at=now,
         )
         if self.auto_prune:
             self.prune(keep=self.max_entries)
@@ -147,35 +161,37 @@ class MemoryManager:
     # -- convenience layer methods --------------------------------------
 
     def add_episodic_memory(
-        self, content: str, key: str | None = None,
+        self,
+        content: str,
+        key: str | None = None,
         tags: list[str] | None = None,
     ) -> MemoryEntry:
         auto_key = key or content[:40].strip()
-        return self.add(content, layer=LAYER_EPISODIC, key=auto_key,
-                        tags=tags or ["episodic"])
+        return self.add(content, layer=LAYER_EPISODIC, key=auto_key, tags=tags or ["episodic"])
 
     def add_working_memory(
-        self, content: str, key: str | None = None,
+        self,
+        content: str,
+        key: str | None = None,
         tags: list[str] | None = None,
     ) -> MemoryEntry:
         auto_key = key or content[:40].strip()
-        return self.add(content, layer=LAYER_WORKING, key=auto_key,
-                        tags=tags or ["working"])
+        return self.add(content, layer=LAYER_WORKING, key=auto_key, tags=tags or ["working"])
 
     def add_procedural_memory(
-        self, content: str, key: str | None = None,
+        self,
+        content: str,
+        key: str | None = None,
         tags: list[str] | None = None,
     ) -> MemoryEntry:
         auto_key = key or content[:40].strip()
-        return self.add(content, layer=LAYER_PROCEDURAL, key=auto_key,
-                        tags=tags or ["procedural"])
+        return self.add(content, layer=LAYER_PROCEDURAL, key=auto_key, tags=tags or ["procedural"])
 
     # -- retrieval ------------------------------------------------------
 
     def get(self, memory_id: int | str) -> MemoryEntry | None:
         """Retrieve a memory by numeric id and bump its access count."""
-        row = self.db.fetch_one(
-            "SELECT * FROM memories WHERE id=?", (memory_id,))
+        row = self.db.fetch_one("SELECT * FROM memories WHERE id=?", (memory_id,))
         if row is None:
             return None
         self._bump_access(memory_id)
@@ -183,15 +199,18 @@ class MemoryManager:
 
     def get_by_key(self, key: str) -> MemoryEntry | None:
         row = self.db.fetch_one(
-            "SELECT * FROM memories WHERE key=? ORDER BY id DESC LIMIT 1",
-            (key,))
+            "SELECT * FROM memories WHERE key=? ORDER BY id DESC LIMIT 1", (key,)
+        )
         if row is None:
             return None
         self._bump_access(row["id"])
         return MemoryEntry.from_row(row)
 
     def search(
-        self, query: str, layer: str | None = None, limit: int = 10,
+        self,
+        query: str,
+        layer: str | None = None,
+        limit: int = 10,
     ) -> list[MemoryEntry]:
         """Full-text search over memories (FTS5 with LIKE fallback for CJK)."""
         rows = self.db.search_memories(query, layer=layer, limit=limit)
@@ -202,7 +221,9 @@ class MemoryManager:
         return entries
 
     def get_recent(
-        self, layer: str | None = None, limit: int = 20,
+        self,
+        layer: str | None = None,
+        limit: int = 20,
     ) -> list[MemoryEntry]:
         sql = "SELECT * FROM memories"
         params: list[Any] = []
@@ -211,15 +232,15 @@ class MemoryManager:
             params.append(layer)
         sql += " ORDER BY created_at DESC, id DESC LIMIT ?"
         params.append(limit)
-        return [MemoryEntry.from_row(r)
-                for r in self.db.fetch_all(sql, tuple(params))]
+        return [MemoryEntry.from_row(r) for r in self.db.fetch_all(sql, tuple(params))]
 
     # -- access bookkeeping ---------------------------------------------
 
     def _bump_access(self, memory_id: int | str) -> None:
         self.db.execute(
-            "UPDATE memories SET accessed_at=?, access_count=access_count+1 "
-            "WHERE id=?", (datetime.now(UTC), memory_id))
+            "UPDATE memories SET accessed_at=?, access_count=access_count+1 WHERE id=?",
+            (datetime.now(UTC), memory_id),
+        )
 
     # -- maintenance ----------------------------------------------------
 
@@ -229,8 +250,7 @@ class MemoryManager:
         Returns the number of deleted rows.
         """
         if layer:
-            row = self.db.fetch_one(
-                "SELECT COUNT(*) AS cnt FROM memories WHERE layer=?", (layer,))
+            row = self.db.fetch_one("SELECT COUNT(*) AS cnt FROM memories WHERE layer=?", (layer,))
         else:
             row = self.db.fetch_one("SELECT COUNT(*) AS cnt FROM memories")
         total = row["cnt"] if row else 0
@@ -242,12 +262,14 @@ class MemoryManager:
                 "DELETE FROM memories WHERE id IN ("
                 "SELECT id FROM memories WHERE layer=? "
                 "ORDER BY accessed_at ASC, id ASC LIMIT ?)",
-                (layer, over))
+                (layer, over),
+            )
         else:
             self.db.execute(
                 "DELETE FROM memories WHERE id IN ("
                 "SELECT id FROM memories ORDER BY accessed_at ASC, id ASC LIMIT ?)",
-                (over,))
+                (over,),
+            )
         logger.info("Pruned %s memories", over)
         return over
 
@@ -262,8 +284,7 @@ class MemoryManager:
 
     def count(self, layer: str | None = None) -> int:
         if layer:
-            row = self.db.fetch_one(
-                "SELECT COUNT(*) AS cnt FROM memories WHERE layer=?", (layer,))
+            row = self.db.fetch_one("SELECT COUNT(*) AS cnt FROM memories WHERE layer=?", (layer,))
         else:
             row = self.db.fetch_one("SELECT COUNT(*) AS cnt FROM memories")
         return row["cnt"] if row else 0
@@ -271,7 +292,8 @@ class MemoryManager:
     # -- extraction / summary -------------------------------------------
 
     def extract_from_messages(
-        self, messages: Iterable[dict[str, Any] | Any],
+        self,
+        messages: Iterable[dict[str, Any] | Any],
     ) -> list[MemoryEntry]:
         """Extract episodic memories from messages containing keywords."""
         created: list[MemoryEntry] = []

@@ -96,9 +96,7 @@ class CommandPalette(Vertical):
         self._selected_index = 0
         self._filtered: list[str] = list(self.COMMANDS.keys())
         self._items: list[CommandItem] = []
-        self._input = Input(
-            placeholder="Type a command...", id="command-input"
-        )
+        self._input = Input(placeholder="Type a command...", id="command-input")
         self._list = Vertical(id="command-list")
 
     def compose(self):
@@ -150,11 +148,7 @@ class CommandPalette(Vertical):
         if not q:
             self._filtered = list(self.COMMANDS.keys())
         else:
-            self._filtered = [
-                cid
-                for cid, label in self.COMMANDS.items()
-                if q in label.lower()
-            ]
+            self._filtered = [cid for cid, label in self.COMMANDS.items() if q in label.lower()]
         self._selected_index = 0
         self._render_list()
 
@@ -162,9 +156,7 @@ class CommandPalette(Vertical):
         if not self._filtered:
             return
         self._items[self._selected_index].set_highlight(False)
-        self._selected_index = (self._selected_index + delta) % len(
-            self._filtered
-        )
+        self._selected_index = (self._selected_index + delta) % len(self._filtered)
         self._items[self._selected_index].set_highlight(True)
 
     def _execute_selected(self) -> None:

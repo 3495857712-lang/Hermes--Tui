@@ -184,10 +184,18 @@ class ContextMap:
         else:
             self._order.append(item_id)
         self._items[item_id] = item
-        logger.debug("Context +%s [%s] %s (~%d tok)", item_id, source.value, label[:40], item.estimated_tokens())
+        logger.debug(
+            "Context +%s [%s] %s (~%d tok)",
+            item_id,
+            source.value,
+            label[:40],
+            item.estimated_tokens(),
+        )
         return item
 
-    def remove(self, item_id: str, reason: EvictionReason = EvictionReason.MANUAL) -> ContextItem | None:
+    def remove(
+        self, item_id: str, reason: EvictionReason = EvictionReason.MANUAL
+    ) -> ContextItem | None:
         """Remove an item by ID, recording the eviction."""
         item = self._items.pop(item_id, None)
         if item and item_id in self._order:
@@ -223,9 +231,7 @@ class ContextMap:
     def clear(self, keep_pinned: bool = True) -> int:
         """Remove all items (except pinned if keep_pinned). Return count removed."""
         to_remove = [
-            iid
-            for iid in list(self._order)
-            if not (keep_pinned and self._items[iid].pinned)
+            iid for iid in list(self._order) if not (keep_pinned and self._items[iid].pinned)
         ]
         for iid in to_remove:
             self.remove(iid, reason=EvictionReason.SESSION_RESET)
@@ -264,9 +270,7 @@ class ContextMap:
 
         # Candidates: unpinned items sorted by (priority asc, insertion order asc).
         candidates = [
-            (self._order.index(iid), item)
-            for iid, item in self._items.items()
-            if not item.pinned
+            (self._order.index(iid), item) for iid, item in self._items.items() if not item.pinned
         ]
         candidates.sort(key=lambda x: (x[1].priority, x[0]))
 
@@ -359,8 +363,7 @@ class ContextMap:
             counts[item.source][0] += 1
             counts[item.source][1] += item.estimated_tokens()
         return [
-            (src, data[0], data[1])
-            for src, data in sorted(counts.items(), key=lambda x: -x[1][1])
+            (src, data[0], data[1]) for src, data in sorted(counts.items(), key=lambda x: -x[1][1])
         ]
 
     # ------------------------------------------------------------------
@@ -420,7 +423,9 @@ class ContextMap:
         for source, count, tokens in breakdown:
             icon = source_icons.get(source, "?")
             pin_mark = " ●" if any(i.pinned for i in self.by_source(source)) else ""
-            lines.append(f"  {icon} {source.value:25s} {count:2d} items  {tokens:>6,} tok{pin_mark}")
+            lines.append(
+                f"  {icon} {source.value:25s} {count:2d} items  {tokens:>6,} tok{pin_mark}"
+            )
 
         # Eviction log.
         if self._eviction_log:

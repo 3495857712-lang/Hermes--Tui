@@ -145,9 +145,7 @@ class TestCompressMessages:
         """Create a history of n user/assistant pairs with long content."""
         messages: list[dict] = [{"role": "system", "content": "System prompt"}]
         for i in range(n):
-            messages.append(
-                {"role": "user", "content": f"Question {i} " + "x" * 200}
-            )
+            messages.append({"role": "user", "content": f"Question {i} " + "x" * 200})
             messages.append(
                 {
                     "role": "assistant",

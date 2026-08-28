@@ -20,7 +20,7 @@ from typing import Any
 from .config import Config
 from .context_map import ContextMap, ContextSource
 from .database import DatabaseManager
-from .llm import LLMClient, LLMMessage, LLMResponse
+from .llm import LLMClient, LLMMessage
 from .memory import MemoryManager
 from .memory_git import MemoryDiff, MemoryGit
 from .pipe_commands import PipeCommandRegistry, PipeContext, default_registry
@@ -113,7 +113,9 @@ class EnhancedAIAgent:
             cm.add(
                 source=ContextSource.SYSTEM,
                 label="System instructions",
-                content=self.prompt.build_system_prompt() if hasattr(self.prompt, 'build_system_prompt') else "",
+                content=self.prompt.build_system_prompt()
+                if hasattr(self.prompt, "build_system_prompt")
+                else "",
                 pinned=True,
                 priority=100,
             )
@@ -133,7 +135,9 @@ class EnhancedAIAgent:
         Returns:
             Command output if it was a command, None otherwise.
         """
-        if not self.pipe_registry.is_command(text.strip()) and not self.pipe_registry.is_pipeline(text.strip()):
+        if not self.pipe_registry.is_command(text.strip()) and not self.pipe_registry.is_pipeline(
+            text.strip()
+        ):
             return None
         ctx = PipeContext(
             agent=self,
@@ -206,9 +210,13 @@ class EnhancedAIAgent:
                 parent_id=user_node.id,
             )
             try:
-                results = self.memory.search(user_input, limit=5) if hasattr(self.memory, 'search') else []
+                results = (
+                    self.memory.search(user_input, limit=5)
+                    if hasattr(self.memory, "search")
+                    else []
+                )
                 for m in results:
-                    content = m.content if hasattr(m, 'content') else str(m)
+                    content = m.content if hasattr(m, "content") else str(m)
                     recalled_memories.append(content)
                     graph.add_node(
                         NodeKind.MEMORY_RECALL,
@@ -232,7 +240,7 @@ class EnhancedAIAgent:
 
         # --- 4. Skill matching ---
         matched_skills = []
-        if hasattr(self.skills, 'match_skills'):
+        if hasattr(self.skills, "match_skills"):
             try:
                 matched = self.skills.match_skills(user_input)
                 matched_skills = [s for s, _score in matched]
@@ -240,14 +248,14 @@ class EnhancedAIAgent:
                     graph.add_node(
                         NodeKind.SKILL_MATCH,
                         label=f"Skill matched: {skill.name}",
-                        detail=getattr(skill, 'description', ''),
+                        detail=getattr(skill, "description", ""),
                         parent_id=user_node.id,
                     )
                     if cm:
                         cm.add(
                             source=ContextSource.SKILL,
                             label=f"Skill: {skill.name}",
-                            content=getattr(skill, 'content', getattr(skill, 'description', '')),
+                            content=getattr(skill, "content", getattr(skill, "description", "")),
                             priority=70,
                         )
             except Exception as exc:
@@ -283,9 +291,7 @@ class EnhancedAIAgent:
                 parent_id=graph.active_node.id if graph.active_node else None,
             )
 
-            llm_msgs = [
-                LLMMessage(**m) if isinstance(m, dict) else m for m in api_messages
-            ]
+            llm_msgs = [LLMMessage(**m) if isinstance(m, dict) else m for m in api_messages]
             response = await self.llm.chat(
                 llm_msgs,
                 tools=tool_defs if iteration == 0 else None,
@@ -376,18 +382,18 @@ class EnhancedAIAgent:
             )
 
         # --- 8. Memory extraction + Git commit ---
-        if self.config.memory.enabled and hasattr(self.memory, 'extract_and_store'):
+        if self.config.memory.enabled and hasattr(self.memory, "extract_and_store"):
             try:
                 old_state = dict(self.memory_git.state)
                 self.memory.extract_and_store(session.messages[-2:])
                 # Commit any new memories.
                 new_diffs = []
                 # Simple heuristic: if there are new memories, commit.
-                if hasattr(self.memory, 'get_recent'):
+                if hasattr(self.memory, "get_recent"):
                     recent = self.memory.get_recent(limit=3)
                     for m in recent:
-                        content = m.content if hasattr(m, 'content') else str(m)
-                        key = m.id if hasattr(m, 'id') else content[:30]
+                        content = m.content if hasattr(m, "content") else str(m)
+                        key = str(m.id) if getattr(m, "id", None) is not None else content[:30]
                         if key not in old_state:
                             new_diffs.append(
                                 MemoryDiff("add", key, new_value=content, layer="episodic")
@@ -442,18 +448,20 @@ class EnhancedAIAgent:
         outcome = TaskOutcome(
             description=last_user[:200],
             success=True,
-            tools_used=list(self.tools.list_names()) if hasattr(self.tools, 'list_names') else [],
+            tools_used=list(self.tools.list_names()) if hasattr(self.tools, "list_names") else [],
             conversation_excerpt=f"User: {last_user}\n\nAssistant: {last_assistant[:1000]}",
         )
 
         # Get existing skills for context.
         existing_skills = []
-        if hasattr(self.skills, 'list_skills'):
+        if hasattr(self.skills, "list_skills"):
             for s in self.skills.list_skills():
-                existing_skills.append({
-                    "name": s.name,
-                    "description": getattr(s, 'description', ''),
-                })
+                existing_skills.append(
+                    {
+                        "name": s.name,
+                        "description": getattr(s, "description", ""),
+                    }
+                )
 
         result = await self.reflection.reflect(outcome, existing_skills)
 

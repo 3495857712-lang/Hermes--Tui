@@ -62,10 +62,7 @@ class PromptBuilder:
             tool_lines = ["## Available tools"]
             for tool in available_tools:
                 fn = tool.get("function", {})
-                tool_lines.append(
-                    f"- **{fn.get('name', '')}**: "
-                    f"{fn.get('description', '')}"
-                )
+                tool_lines.append(f"- **{fn.get('name', '')}**: {fn.get('description', '')}")
             sections.append("\n".join(tool_lines))
 
         if self.memory is not None:
@@ -79,15 +76,11 @@ class PromptBuilder:
                 skill_lines = ["## Available skills"]
                 for s in all_skills:
                     meta = self.skills.get_metadata(s)
-                    skill_lines.append(
-                        f"- **{meta['name']}**: {meta['description']}"
-                    )
+                    skill_lines.append(f"- **{meta['name']}**: {meta['description']}")
                 sections.append("\n".join(skill_lines))
 
         now = datetime.now(UTC)
-        sections.append(
-            f"## Current time\n{now.strftime('%Y-%m-%d %H:%M:%S UTC')}"
-        )
+        sections.append(f"## Current time\n{now.strftime('%Y-%m-%d %H:%M:%S UTC')}")
 
         return "\n\n".join(sections)
 
@@ -133,18 +126,14 @@ class PromptBuilder:
                 )
             if skill_contexts:
                 content_parts.append(
-                    "\n\n<related-skills>\n"
-                    + "\n\n".join(skill_contexts)
-                    + "\n</related-skills>"
+                    "\n\n<related-skills>\n" + "\n\n".join(skill_contexts) + "\n</related-skills>"
                 )
 
         messages.append({"role": "user", "content": "\n".join(content_parts)})
         return messages
 
     @staticmethod
-    def format_tool_result(
-        tool_call_id: str, result: str
-    ) -> dict[str, str]:
+    def format_tool_result(tool_call_id: str, result: str) -> dict[str, str]:
         """Format a tool execution result as a chat message.
 
         Args:
@@ -180,23 +169,15 @@ class PromptBuilder:
         if not messages:
             return messages
 
-        total = sum(
-            approx_token_count(m.get("content", "")) for m in messages
-        )
+        total = sum(approx_token_count(m.get("content", "")) for m in messages)
         if total <= max_tokens:
             return messages
 
-        system_msg = (
-            messages[0] if messages[0].get("role") == "system" else None
-        )
+        system_msg = messages[0] if messages[0].get("role") == "system" else None
         conversation = messages[1:] if system_msg else messages
 
         keep_last = max(4, len(conversation) // 3)
-        middle = (
-            conversation[:-keep_last]
-            if len(conversation) > keep_last
-            else []
-        )
+        middle = conversation[:-keep_last] if len(conversation) > keep_last else []
         tail = conversation[-keep_last:]
 
         result: list[dict[str, Any]] = []
@@ -205,16 +186,13 @@ class PromptBuilder:
 
         if middle:
             summary_lines = [
-                f"- [{m.get('role', '?')}] "
-                f"{(m.get('content') or '')[:120]}"
-                for m in middle
+                f"- [{m.get('role', '?')}] {(m.get('content') or '')[:120]}" for m in middle
             ]
             result.append(
                 {
                     "role": "system",
                     "content": (
-                        "Earlier conversation summary (compressed):\n"
-                        + "\n".join(summary_lines)
+                        "Earlier conversation summary (compressed):\n" + "\n".join(summary_lines)
                     ),
                 }
             )
@@ -279,8 +257,9 @@ def build_messages(
         elif hasattr(msg, "to_dict"):
             messages.append(msg.to_dict())
         else:
-            messages.append({"role": getattr(msg, "role", "user"),
-                             "content": getattr(msg, "content", str(msg))})
+            messages.append(
+                {"role": getattr(msg, "role", "user"), "content": getattr(msg, "content", str(msg))}
+            )
     messages.append({"role": "user", "content": user_message})
     return messages
 
@@ -335,18 +314,16 @@ def compress_messages(
 
     middle = rest[:-keep]
     tail = rest[-keep:]
-    summary_lines = [
-        f"- [{m.get('role', '?')}] {(m.get('content') or '')[:120]}"
-        for m in middle
-    ]
+    summary_lines = [f"- [{m.get('role', '?')}] {(m.get('content') or '')[:120]}" for m in middle]
     result: list[dict[str, Any]] = []
     if system:
         result.append(system)
-    result.append({
-        "role": "system",
-        "content": "Earlier conversation summary (compressed):\n"
-                   + "\n".join(summary_lines),
-    })
+    result.append(
+        {
+            "role": "system",
+            "content": "Earlier conversation summary (compressed):\n" + "\n".join(summary_lines),
+        }
+    )
     result.extend(tail)
 
     # If still too big, drop the summary

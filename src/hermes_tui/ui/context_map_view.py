@@ -117,10 +117,7 @@ class ContextMapView(VerticalScroll):
 
         status_class = "cm-over" if is_over else "cm-free"
         self.mount(
-            Static(
-                f"[cm-bar]{bar}[/]  "
-                f"[{status_class}]{used:,} / {total:,} tok ({pct:.1f}%)[/]"
-            )
+            Static(f"[cm-bar]{bar}[/]  [{status_class}]{used:,} / {total:,} tok ({pct:.1f}%)[/]")
         )
 
         if is_over:
@@ -145,20 +142,14 @@ class ContextMapView(VerticalScroll):
             )
 
         # Free space.
-        self.mount(
-            Static(
-                f"[cm-free]  Free: {free:,} tokens[/]"
-            )
-        )
+        self.mount(Static(f"[cm-free]  Free: {free:,} tokens[/]"))
 
         # Pinned items.
         pinned = cm.pinned_items()
         if pinned:
             self.mount(Static("[cm-section]Pinned (never evicted)[/]"))
             for item in pinned:
-                self.mount(
-                    Static(f"[cm-item pinned]  ● {item.label[:50]}[/]")
-                )
+                self.mount(Static(f"[cm-item pinned]  ● {item.label[:50]}[/]"))
 
         # Eviction log.
         if self.show_evicted:

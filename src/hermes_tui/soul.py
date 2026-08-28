@@ -62,9 +62,7 @@ class SoulManager:
             The SOUL content as a string.
         """
         if not self.soul_path.exists():
-            logger.info(
-                "SOUL file not found; creating default at %s", self.soul_path
-            )
+            logger.info("SOUL file not found; creating default at %s", self.soul_path)
             self.save(self.get_default_soul())
         content = self.soul_path.read_text(encoding="utf-8")
         logger.debug("SOUL loaded (%d chars)", len(content))

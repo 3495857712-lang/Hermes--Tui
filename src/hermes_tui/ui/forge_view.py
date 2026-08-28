@@ -112,8 +112,10 @@ class SkillForgeView(VerticalScroll):
 
         if not proposals:
             self.mount(
-                Static("[sf-empty]  No proposals. The agent will propose skill "
-                       "improvements after completing tasks.[/]")
+                Static(
+                    "[sf-empty]  No proposals. The agent will propose skill "
+                    "improvements after completing tasks.[/]"
+                )
             )
             return
 
@@ -178,19 +180,14 @@ class SkillForgeView(VerticalScroll):
             self.mount(Static("  [sf-status]Comments:[/]"))
             for c in p.review_comments[-3:]:
                 self.mount(
-                    Static(
-                        f"  [sf-insight]{c.get('author', '?')}: "
-                        f"{c.get('body', '')[:100]}[/]"
-                    )
+                    Static(f"  [sf-insight]{c.get('author', '?')}: {c.get('body', '')[:100]}[/]")
                 )
 
     def move_selection(self, delta: int) -> None:
         """Move selection cursor."""
         if not self._visible:
             return
-        self.selected_index = max(
-            0, min(len(self._visible) - 1, self.selected_index + delta)
-        )
+        self.selected_index = max(0, min(len(self._visible) - 1, self.selected_index + delta))
         self.refresh_view()
 
     def accept_selected(self) -> str | None:

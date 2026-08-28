@@ -59,10 +59,7 @@ class TokenCounter(Static):
     total_tokens: reactive[int] = reactive(0)
 
     def _render_text(self) -> str:
-        return (
-            f"up {self.prompt_tokens} down {self.completion_tokens} "
-            f"sum {self.total_tokens}"
-        )
+        return f"up {self.prompt_tokens} down {self.completion_tokens} sum {self.total_tokens}"
 
     def watch_prompt_tokens(self, _old: int, _new: int) -> None:
         """Re-render when prompt tokens change."""

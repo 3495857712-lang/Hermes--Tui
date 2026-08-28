@@ -4,6 +4,7 @@ import re
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 
 def generate_id() -> str:
@@ -67,7 +68,7 @@ def format_timestamp(dt: datetime | None = None) -> str:
     return dt.strftime("%Y-%m-%d %H:%M")
 
 
-def parse_yaml_frontmatter(content: str) -> tuple[dict, str]:
+def parse_yaml_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     """Parse YAML frontmatter from a Markdown document.
 
     Frontmatter must be enclosed between two ``---`` lines at the very
@@ -124,7 +125,7 @@ def approx_token_count(text: str) -> int:
 
 
 # Patterns that may indicate prompt-injection attempts.
-_INJECTION_PATTERNS: list[re.Pattern] = [
+_INJECTION_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"ignore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?", re.I),
     re.compile(r"disregard\s+(?:all\s+)?(?:previous|prior|above)", re.I),
     re.compile(r"forget\s+(?:everything|all|previous|prior)", re.I),
@@ -178,7 +179,5 @@ def safe_path_join(base: Path, *paths: str) -> Path:
     try:
         candidate.relative_to(base_resolved)
     except ValueError as exc:
-        raise ValueError(
-            f"Path '{candidate}' escapes base directory '{base_resolved}'"
-        ) from exc
+        raise ValueError(f"Path '{candidate}' escapes base directory '{base_resolved}'") from exc
     return candidate

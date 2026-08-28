@@ -95,7 +95,7 @@ class SkillLoader:
         return list(self._skills.values())
 
     @staticmethod
-    def parse_frontmatter(content: str) -> tuple[dict, str]:
+    def parse_frontmatter(content: str) -> tuple[dict[str, Any], str]:
         """Split a Markdown document into YAML frontmatter and body."""
         return parse_yaml_frontmatter(content)
 
@@ -156,8 +156,7 @@ class SkillLoader:
             if not skill.enabled:
                 continue
             text = " ".join(
-                [skill.name, skill.description, skill.body,
-                 " ".join(skill.tags)]
+                [skill.name, skill.description, skill.body, " ".join(skill.tags)]
             ).lower()
             text_tokens = set(re.findall(r"\w+", text))
             overlap = query_tokens & text_tokens
@@ -180,8 +179,7 @@ class SkillLoader:
             if not skill.enabled:
                 continue
             text = " ".join(
-                [skill.name, skill.description, skill.body,
-                 " ".join(skill.tags)]
+                [skill.name, skill.description, skill.body, " ".join(skill.tags)]
             ).lower()
             text_tokens = set(re.findall(r"\w+", text))
             overlap = query_tokens & text_tokens
@@ -276,11 +274,12 @@ class SkillLoader:
         return skill.body
 
     @staticmethod
-    def _extract_parameters(content: str) -> list[dict]:
-        params: list[dict] = []
+    def _extract_parameters(content: str) -> list[dict[str, Any]]:
+        params: list[dict[str, Any]] = []
         match = re.search(
             r"##+\s*Parameters\s*\n(.+?)(?=\n##|\Z)",
-            content, re.DOTALL | re.IGNORECASE,
+            content,
+            re.DOTALL | re.IGNORECASE,
         )
         if not match:
             return params
@@ -297,8 +296,12 @@ class SkillLoader:
                     parts = [p.strip().lower() for p in ptype_desc.split(",")]
                     ptype = parts[0] if parts else "string"
                     required = "required" in parts
-                params.append({
-                    "name": pname, "type": ptype,
-                    "description": pdesc, "required": required,
-                })
+                params.append(
+                    {
+                        "name": pname,
+                        "type": ptype,
+                        "description": pdesc,
+                        "required": required,
+                    }
+                )
         return params

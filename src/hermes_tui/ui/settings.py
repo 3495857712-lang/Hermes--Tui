@@ -181,9 +181,7 @@ class SettingsScreen(ModalScreen[bool]):
             pass
 
         try:
-            self._config.llm.max_tokens = int(
-                self.query_one("#setting-max-tokens", Input).value
-            )
+            self._config.llm.max_tokens = int(self.query_one("#setting-max-tokens", Input).value)
         except ValueError:
             pass
 

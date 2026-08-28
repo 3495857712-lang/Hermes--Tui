@@ -259,8 +259,7 @@ class SkillForge:
         skills_summary = ""
         if existing_skills:
             skills_summary = "\n".join(
-                f"- {s.get('name', '?')}: {s.get('description', '')[:100]}"
-                for s in existing_skills
+                f"- {s.get('name', '?')}: {s.get('description', '')[:100]}" for s in existing_skills
             )
 
         reflection_prompt = f"""## Task
@@ -336,8 +335,7 @@ Generate a skill proposal with:
         p = self._get(proposal_id)
         if p.status != ProposalStatus.ACCEPTED:
             raise ValueError(
-                f"Proposal {proposal_id} must be accepted before merge "
-                f"(current: {p.status.value})"
+                f"Proposal {proposal_id} must be accepted before merge (current: {p.status.value})"
             )
         p.status = ProposalStatus.MERGED
         p.updated_at = datetime.now(UTC)
