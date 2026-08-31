@@ -6,4 +6,4 @@ pyyaml>=6.0.1
 rich>=13.7.0
 click>=8.1.7
 markdown-it-py>=3.0.0
-linkify-it-py>=2.0.0
+linkify-it-py>=2.1.1
