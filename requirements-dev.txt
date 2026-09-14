@@ -16,7 +16,7 @@ mypy>=1.8.0
 types-pyyaml
 
 # Build and packaging
-build>=1.0.0
+build>=1.6.1
 twine>=4.0.0
 hatchling>=1.21.0
 
